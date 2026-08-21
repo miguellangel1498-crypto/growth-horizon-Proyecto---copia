@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}{{ empresa.nombre }} &middot; Growth Horizon{% endblock %}
+{% block cabecera %}{{ empresa.nombre }}{% endblock %}
+{% block subcabecera %}Vista global (admin) · toda la información de la empresa.{% endblock %}
+
+{% block contenido %}
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <p class="text-sm text-slate-500">Productos</p>
+            <p class="text-2xl font-black text-slate-900 mt-1">{{ total_productos }}</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <p class="text-sm text-slate-500">Ventas</p>
+            <p class="text-2xl font-black text-slate-900 mt-1">{{ total_ventas }}</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <p class="text-sm text-slate-500">Ingresos totales</p>
+            <p class="text-2xl font-black text-emerald-600 mt-1">{{ total_ingresos | moneda }}</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <p class="text-sm text-slate-500">Usuarios activos</p>
+            <p class="text-2xl font-black text-slate-900 mt-1">{{ usuarios | length }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-bold text-slate-900 mb-4">Datos de la empresa</h3>
+            <dl class="space-y-3 text-sm">
+                <div class="flex justify-between"><dt class="text-slate-500">RUC</dt><dd class="font-medium text-slate-800">{{ empresa.ruc or '—' }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Sector</dt><dd class="font-medium text-slate-800">{{ empresa.sector.nombre if empresa.sector else 'Sin clasificar' }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Actividad</dt><dd class="font-medium text-slate-800 text-right">{{ empresa.actividad or '—' }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Correo</dt><dd class="font-medium text-slate-800">{{ empresa.correo or '—' }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Teléfono</dt><dd class="font-medium text-slate-800">{{ empresa.telefono or '—' }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Dirección</dt><dd class="font-medium text-slate-800">{{ empresa.direccion or '—' }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Estado</dt><dd class="font-medium">{{ 'Activo' if empresa.estado == 'activo' else 'Inactivo' }}</dd></div>
+            </dl>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <a href="{{ url_for('empresas.editar', empresa_id=empresa.id) }}" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium hover:bg-slate-100 transition">Editar empresa</a>
+                <a href="{{ url_for('empresas.exportar_ventas_empresa_xlsx', empresa_id=empresa.id) }}"
+                   class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition">📥 Exportar ventas</a>
+                <a href="{{ url_for('empresas.exportar_inventario_empresa_xlsx', empresa_id=empresa.id) }}"
+                   class="px-3 py-1.5 rounded-lg bg-cyan-700 text-white text-xs font-semibold hover:bg-cyan-800 transition">📥 Exportar inventario</a>
+                <a href="{{ url_for('empresas.listar') }}" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium hover:bg-slate-100 transition">&larr; Volver al directorio</a>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100">
+                <h3 class="font-bold text-slate-900">Usuarios vinculados</h3>
+            </div>
+            <ul class="divide-y divide-slate-100">
+                {% for usuario in usuarios %}
+                <li class="px-6 py-3 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-800">{{ usuario.nombre }}</p>
+                        <p class="text-xs text-slate-400">{{ usuario.email }}</p>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-medium {{ 'bg-emerald-100 text-emerald-700' if usuario.rol == 'cliente' else 'bg-sky-100 text-sky-700' }}">{{ usuario.rol }}</span>
+                </li>
+                {% else %}
+                <li class="px-6 py-8 text-center text-slate-400 text-sm">Sin usuarios vinculados.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="font-bold text-slate-900">Productos</h3>
+                <span class="text-sm text-slate-400">{{ total_productos }}</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-xs uppercase tracking-wider text-slate-500 border-b border-slate-100 bg-slate-50">
+                            <th class="px-6 py-2.5 font-semibold">Nombre</th>
+                            <th class="px-6 py-2.5 font-semibold">Categoría</th>
+                            <th class="px-6 py-2.5 font-semibold">Precio</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                    {% for p in productos %}
+                        <tr>
+                            <td class="px-6 py-2.5 font-medium text-slate-800">{{ p.nombre }}</td>
+                            <td class="px-6 py-2.5 text-slate-500">{{ p.categoria or '—' }}</td>
+                            <td class="px-6 py-2.5 font-medium text-slate-700">{{ p.precio | moneda }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3" class="px-6 py-6 text-center text-slate-400 text-sm">Sin productos.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-bold text-slate-900 mb-4">Horarios de atención</h3>
+            {% if horarios %}
+            <ul class="divide-y divide-slate-100">
+                {% for h in horarios %}
+                <li class="py-2.5 flex items-center justify-between">
+                    <span class="font-medium text-slate-800">{{ h.dia }}</span>
+                    <span class="text-sm text-slate-500 font-mono">{{ h.apertura }} – {{ h.cierre }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-sm text-slate-500">Sin horarios configurados.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mt-6">
+        <div class="px-6 py-4 border-b border-slate-100">
+            <h3 class="font-bold text-slate-900">Últimas ventas</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs uppercase tracking-wider text-slate-500 border-b border-slate-100 bg-slate-50">
+                        <th class="px-6 py-2.5 font-semibold">Fecha</th>
+                        <th class="px-6 py-2.5 font-semibold">Producto</th>
+                        <th class="px-6 py-2.5 font-semibold">Cant.</th>
+                        <th class="px-6 py-2.5 font-semibold">Total</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                {% for v in ventas %}
+                    <tr>
+                        <td class="px-6 py-2.5 text-slate-500">{{ v.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td class="px-6 py-2.5 font-medium text-slate-800">{{ v.producto.nombre if v.producto else '—' }}</td>
+                        <td class="px-6 py-2.5 text-slate-600">{{ v.cantidad }}</td>
+                        <td class="px-6 py-2.5 font-semibold text-emerald-600">{{ v.total | moneda }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="px-6 py-6 text-center text-slate-400 text-sm">Sin ventas registradas.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

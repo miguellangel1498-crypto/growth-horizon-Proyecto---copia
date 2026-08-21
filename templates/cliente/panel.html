@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Mi empresa &middot; Growth Horizon{% endblock %}
+{% block cabecera %}Panel de {{ empresa.nombre }}{% endblock %}
+{% block subcabecera %}Gestiona tus productos, horarios de atención y registra tus ventas.{% endblock %}
+
+{% block contenido %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-cyan-100 text-cyan-700 flex items-center justify-center text-xl">📦</div>
+            <div>
+                <p class="text-sm text-slate-500">Productos</p>
+                <p class="text-2xl font-black text-slate-900">{{ productos | length }}</p>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl">🕐</div>
+            <div>
+                <p class="text-sm text-slate-500">Horarios</p>
+                <p class="text-2xl font-black text-slate-900">{{ horarios | length }}</p>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl">💰</div>
+            <div>
+                <p class="text-sm text-slate-500">Ventas registradas</p>
+                <p class="text-2xl font-black text-slate-900">{{ total_ventas | moneda }}</p>
+            </div>
+        </div>
+        <a href="{{ url_for('analisis.principal') }}" class="bg-gradient-to-br from-cyan-500 to-emerald-500 rounded-2xl p-6 hover:opacity-95 transition flex items-center justify-between">
+            <div>
+                <p class="text-sm text-slate-900/70 font-medium">Analiza tu negocio</p>
+                <p class="text-xl font-black text-slate-900">Ver análisis →</p>
+            </div>
+            <span class="text-3xl">📈</span>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <h3 class="font-bold text-slate-900">Últimas ventas</h3>
+                <a href="{{ url_for('cliente.ventas_listar') }}" class="text-sm text-cyan-600 hover:text-cyan-700">Ver todas →</a>
+            </div>
+            <ul class="divide-y divide-slate-100">
+                {% for venta in ventas %}
+                <li class="px-6 py-3 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-800">{{ venta.producto.nombre if venta.producto else 'Producto' }}</p>
+                        <p class="text-xs text-slate-400">{{ venta.fecha.strftime('%d/%m/%Y %H:%M') }} · {{ venta.cantidad }} und.</p>
+                    </div>
+                    <span class="font-semibold text-emerald-600">{{ venta.total | moneda }}</span>
+                </li>
+                {% else %}
+                <li class="px-6 py-10 text-center text-slate-400 text-sm">Aún no registras ventas.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <h3 class="font-bold text-slate-900">Horarios de atención</h3>
+                <a href="{{ url_for('cliente.horarios_listar') }}" class="text-sm text-cyan-600 hover:text-cyan-700">Gestionar →</a>
+            </div>
+            <ul class="divide-y divide-slate-100">
+                {% for horario in horarios %}
+                <li class="px-6 py-3 flex items-center justify-between">
+                    <span class="text-sm font-medium text-slate-800">{{ horario.dia }}</span>
+                    <span class="text-sm text-slate-500">{{ horario.apertura }} - {{ horario.cierre }}</span>
+                </li>
+                {% else %}
+                <li class="px-6 py-10 text-center text-slate-400 text-sm">Sin horarios configurados.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
+        <a href="{{ url_for('cliente.productos_listar') }}" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-cyan-300 transition text-center">
+            <span class="text-3xl">📦</span>
+            <p class="mt-2 font-semibold text-slate-800">Administrar productos</p>
+        </a>
+        <a href="{{ url_for('cliente.horarios_nuevo') }}" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-cyan-300 transition text-center">
+            <span class="text-3xl">🕐</span>
+            <p class="mt-2 font-semibold text-slate-800">Configurar horario</p>
+        </a>
+        <a href="{{ url_for('cliente.ventas_nueva') }}" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-cyan-300 transition text-center">
+            <span class="text-3xl">💰</span>
+            <p class="mt-2 font-semibold text-slate-800">Registrar venta</p>
+        </a>
+    </div>
+
+    <div class="mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="font-bold text-slate-900">Reportes (Excel)</h3>
+                <p class="text-sm text-slate-500">Descarga las ventas e inventario de tu empresa.</p>
+            </div>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <a href="{{ url_for('cliente.exportar_ventas_xlsx') }}"
+               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition">
+                <span class="text-base">📥</span> Exportar ventas (Excel)
+            </a>
+            <a href="{{ url_for('cliente.exportar_inventario_xlsx') }}"
+               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-cyan-700 text-white text-sm font-semibold hover:bg-cyan-800 transition">
+                <span class="text-base">📥</span> Exportar inventario (Excel)
+            </a>
+        </div>
+    </div>
+{% endblock %}

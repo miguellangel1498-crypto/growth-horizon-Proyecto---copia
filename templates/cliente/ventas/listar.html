@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Ventas &middot; Growth Horizon{% endblock %}
+{% block cabecera %}Ventas realizadas{% endblock %}
+{% block subcabecera %}Historial de ventas de {{ current_user.empresa.nombre }}.{% endblock %}
+
+{% block contenido %}
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+            <p class="text-sm text-slate-500">
+                {{ ventas | length }} venta{{ 's' if ventas | length != 1 }} ·
+                <span class="font-semibold text-emerald-600">Total: {{ total_general | moneda }}</span>
+            </p>
+            <div class="flex gap-2">
+                <a href="{{ url_for('cliente.exportar_ventas_xlsx') }}"
+                   class="px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition whitespace-nowrap">
+                    📥 Excel
+                </a>
+                <a href="{{ url_for('cliente.ventas_nueva') }}" class="px-4 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-900 text-sm font-semibold hover:opacity-90 transition whitespace-nowrap">
+                    ＋ Registrar venta
+                </a>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs uppercase tracking-wider text-slate-500 border-b border-slate-100 bg-slate-50">
+                        <th class="px-6 py-3 font-semibold">#</th>
+                        <th class="px-6 py-3 font-semibold">Producto</th>
+                        <th class="px-6 py-3 font-semibold">Cantidad</th>
+                        <th class="px-6 py-3 font-semibold">P. unitario</th>
+                        <th class="px-6 py-3 font-semibold">Total</th>
+                        <th class="px-6 py-3 font-semibold">Fecha</th>
+                        <th class="px-6 py-3 font-semibold text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                {% for venta in ventas %}
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-6 py-4 text-slate-400">{{ venta.id }}</td>
+                        <td class="px-6 py-4 font-medium text-slate-800">{{ venta.producto.nombre if venta.producto else '—' }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ venta.cantidad }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ venta.precio_unitario | moneda }}</td>
+                        <td class="px-6 py-4 font-semibold text-emerald-600">{{ venta.total | moneda }}</td>
+                        <td class="px-6 py-4 text-slate-500">{{ venta.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td class="px-6 py-4 text-right">
+                            <form method="post" action="{{ url_for('cliente.ventas_eliminar', venta_id=venta.id) }}"
+                                  onsubmit="return confirm('¿Eliminar esta venta?')" class="inline">
+                                <button type="submit" class="px-3 py-1.5 rounded-lg border border-rose-200 text-rose-600 text-xs font-medium hover:bg-rose-50 transition">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center">
+                            <p class="text-slate-400 text-sm">Aún no has registrado ventas.</p>
+                            <a href="{{ url_for('cliente.ventas_nueva') }}" class="inline-block mt-3 text-sm text-cyan-600 hover:text-cyan-700">＋ Registrar la primera venta</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

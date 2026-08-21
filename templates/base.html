@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Growth Horizon{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef7ff',
+                            100: '#d9edff',
+                            500: '#0e7490',
+                            600: '#0f766e',
+                            700: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: transparent;
+        }
+    </style>
+</head>
+
+<body class="h-full bg-slate-100 text-slate-800 antialiased">
+
+    <div class="flex h-screen overflow-hidden" x-data="{ empresaMenu: true }">
+
+        <aside class="w-72 flex-col bg-slate-900 text-slate-300 shrink-0" x-show="empresaMenu">
+            <div class="flex items-center gap-3 px-6 py-5 border-b border-slate-800">
+                <div
+                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-500 flex items-center justify-center text-lg font-black text-slate-900">
+                    GH</div>
+                <div>
+                    <h1 class="text-white font-bold text-lg leading-tight">Growth Horizon</h1>
+                    <p class="text-xs text-slate-500">Plataforma empresarial</p>
+                </div>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto scrollbar-thin px-3 py-4 space-y-1">
+                <a href="{{ url_for('main.dashboard') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint == 'main.dashboard' %}bg-slate-800 text-white{% endif %}">
+                    <span class="text-lg">▦</span> Panel General
+                </a>
+
+                {% if current_user.is_authenticated and current_user.rol == 'admin' %}
+                <div class="pt-3 mt-2 border-t border-slate-800">
+                    <p class="px-3 pb-1 text-xs uppercase tracking-wider text-slate-500">Directorio global</p>
+                    <a href="{{ url_for('empresas.listar') }}"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint.startswith('empresas') %}bg-slate-800 text-white{% endif %}">
+                        <span class="text-lg">🏢</span> Empresas
+                    </a>
+                </div>
+                {% endif %}
+
+                {% if current_user.is_authenticated and current_user.es_empresa %}
+                <div class="pt-3 mt-3 border-t border-slate-800">
+                    <p class="px-3 pb-1 text-xs uppercase tracking-wider text-slate-500">Mi empresa</p>
+                    {% if current_user.empresa %}
+                    <a href="{{ url_for('cliente.panel') }}"
+                        class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint.startswith('cliente') %}bg-slate-800 text-white{% endif %}">
+                        <span class="flex items-center gap-3"><span class="text-lg">📊</span> Panel</span>
+                    </a>
+                    <a href="{{ url_for('cliente.productos_listar') }}"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint == 'cliente.productos_listar' %}bg-slate-800 text-white{% endif %}">
+                        <span class="text-lg">📦</span> Productos
+                    </a>
+                    <a href="{{ url_for('cliente.horarios_listar') }}"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint == 'cliente.horarios_listar' %}bg-slate-800 text-white{% endif %}">
+                        <span class="text-lg">🕐</span> Horarios
+                    </a>
+                    <a href="{{ url_for('cliente.ventas_listar') }}"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint.startswith('cliente.ventas') %}bg-slate-800 text-white{% endif %}">
+                        <span class="text-lg">💰</span> Ventas
+                    </a>
+                    <a href="{{ url_for('analisis.principal') }}"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint == 'analisis.principal' %}bg-slate-800 text-white{% endif %}">
+                        <span class="text-lg">📈</span> Análisis
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                {% if current_user.is_authenticated and current_user.rol == 'admin' %}
+                <div
+                    x-data="{ abierto: {% if request.endpoint and request.endpoint.startswith('empresas') %}true{% else %}true{% endif %} }">
+                    <button type="button" @click="abierto = !abierto"
+                        class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition">
+                        <span class="flex items-center gap-3"><span class="text-lg">🗂️</span> Sectores</span>
+                        <svg x-show="!abierto" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                        <svg x-show="abierto" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                        </svg>
+                    </button>
+                    <div x-show="abierto" x-collapse class="ml-3 mt-1 space-y-1">
+                        <a href="{{ url_for('empresas.listar') }}"
+                            class="flex items-center justify-between px-3 py-2 rounded-lg text-sm hover:bg-slate-800 transition">
+                            Todos los sectores
+                            <span class="text-xs bg-slate-700 px-1.5 py-0.5 rounded">{{ cantidad_empresas }}</span>
+                        </a>
+                        {% for sector in sectores %}
+                        <a href="{{ url_for('empresas.listar', sector=sector.id) }}"
+                            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-slate-800 transition">
+                            <span class="w-2 h-2 rounded-full" style="background-color: {{ sector.color }}"></span>
+                            {{ sector.nombre }}
+                        </a>
+                        {% endfor %}
+                        <a href="{{ url_for('sectores.listar') }}"
+                            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-cyan-400 hover:bg-slate-800 transition">
+                            ⚙️ Gestionar sectores
+                        </a>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('empresas.nueva') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition">
+                    <span class="text-lg">＋</span> Nueva empresa
+                </a>
+                {% endif %}
+
+                {% if current_user.is_authenticated and current_user.rol == 'admin' %}
+                <div class="pt-4 mt-4 border-t border-slate-800">
+                    <p class="px-3 pb-2 text-xs uppercase tracking-wider text-slate-500">Administración</p>
+                    <a href="{{ url_for('seguridad.auditoria') }}"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint.startswith('seguridad') %}bg-slate-800 text-white{% endif %}">
+                        <span class="text-lg">🛡️</span> Registro de auditoría
+                    </a>
+                </div>
+                {% endif %}
+            </nav>
+
+            <div class="px-6 py-4 border-t border-slate-800 text-xs text-slate-500">
+                GH Platform v1.0
+            </div>
+        </aside>
+
+        <!-- Móvil: barra superior -->
+        <div
+            class="md:hidden flex items-center justify-between bg-slate-900 text-white px-4 py-3 fixed top-0 inset-x-0 z-20">
+            <div class="flex items-center gap-2 font-bold">GH Growth Horizon</div>
+            {% if current_user.is_authenticated %}
+            <button @click="empresaMenu = !empresaMenu"
+                class="flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-1.5 text-sm text-slate-300 hover:bg-slate-700 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                Menú
+            </button>
+            <a href="{{ url_for('auth.logout') }}" class="text-sm text-slate-300">Salir</a>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="text-sm text-slate-300">Iniciar sesión</a>
+            {% endif %}
+        </div>
+
+        <div class="flex-1 flex flex-col overflow-hidden pt-14 md:pt-0">
+            <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">{% block cabecera %}{% endblock %}</h2>
+                    <p class="text-sm text-slate-500">{% block subcabecera %}{% endblock %}</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    {% if current_user.is_authenticated %}
+                    <span class="hidden sm:inline-flex items-center gap-2 text-sm text-slate-600">
+                        <span
+                            class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-emerald-500 text-white flex items-center justify-center text-xs font-bold">
+                            {{ current_user.nombre[:1] | upper }}
+                        </span>
+                        {{ current_user.nombre }}
+                        <span
+                            class="px-2 py-0.5 text-xs rounded-full {{ 'bg-emerald-100 text-emerald-700' if current_user.rol == 'admin' else 'bg-sky-100 text-sky-700' }}">
+                            {{ 'Admin' if current_user.rol == 'admin' else 'Analista' }}
+                        </span>
+                    </span>
+                    <a href="{{ url_for('auth.logout') }}"
+                        class="text-sm text-slate-500 hover:text-red-600 transition">Salir</a>
+                    {% endif %}
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto scrollbar-thin p-6">
+                <div class="space-y-4">
+                    {% with mensajes = get_flashed_messages(with_categories=true) %}
+                    {% for categoria, mensaje in mensajes %}
+                    <div class="px-4 py-3 rounded-lg text-sm font-medium border
+                            {% if categoria == 'success' %}bg-emerald-50 text-emerald-800 border-emerald-200
+                            {% elif categoria == 'error' %}bg-red-50 text-red-800 border-red-200
+                            {% elif categoria == 'warning' %}bg-amber-50 text-amber-800 border-amber-200
+                            {% else %}bg-sky-50 text-sky-800 border-sky-200{% endif %}">
+                        {{ mensaje }}
+                    </div>
+                    {% endfor %}
+                    {% endwith %}
+                </div>
+
+                {% block contenido %}{% endblock %}
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>

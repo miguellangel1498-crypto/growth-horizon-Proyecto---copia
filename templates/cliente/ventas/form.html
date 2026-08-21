@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar venta &middot; Growth Horizon{% endblock %}
+{% block cabecera %}Registrar venta{% endblock %}
+{% block subcabecera %}Registra una venta realizada. El precio unitario se toma del producto.{% endblock %}
+
+{% block contenido %}
+    {% if productos %}
+    <div class="max-w-xl bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+        <form method="post" class="space-y-6" x-data="{ precio: 0 }">
+            <div>
+                <label class="block text-sm font-medium mb-1.5 text-slate-700">Producto *</label>
+                <select name="producto_id" required x-on:change="precio = Number(event.target.selectedOptions[0].dataset.precio || 0)"
+                        class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none text-sm">
+                    <option value="">— Selecciona un producto —</option>
+                    {% for producto in productos %}
+                        <option value="{{ producto.id }}" data-precio="{{ producto.precio }}">{{ producto.nombre }} ({{ producto.precio | moneda }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium mb-1.5 text-slate-700">Cantidad</label>
+                    <input type="number" min="1" name="cantidad" value="1" required
+                           class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5 text-slate-700">Fecha y hora</label>
+                    <input type="datetime-local" name="fecha"
+                           class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none text-sm">
+                </div>
+            </div>
+            <div class="flex items-center justify-between px-4 py-3 rounded-lg bg-slate-50 border border-slate-200">
+                <span class="text-sm text-slate-500">Total estimado</span>
+                <span class="font-black text-emerald-600" x-text="'S/ ' + (precio * (parseInt(document.forms[0].cantidad?.value || 1))).toFixed(2)">S/ 0.00</span>
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+                <a href="{{ url_for('cliente.ventas_listar') }}"
+                   class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm font-medium hover:bg-slate-50 transition">Cancelar</a>
+                <button type="submit"
+                        class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-900 text-sm font-semibold hover:opacity-90 transition">
+                    Registrar venta
+                </button>
+            </div>
+        </form>
+    </div>
+    {% else %}
+    <div class="max-w-xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
+        <div class="text-4xl mb-4">📦</div>
+        <h3 class="font-bold text-slate-900 text-lg">Primero crea un producto</h3>
+        <p class="text-slate-500 mt-1 text-sm">Necesitas al menos un producto para registrar ventas.</p>
+        <a href="{{ url_for('cliente.products_nuevo') if False else url_for('cliente.productos_nuevo') }}"
+           class="inline-block mt-5 px-5 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-900 text-sm font-semibold hover:opacity-90 transition">
+            Crear producto
+        </a>
+    </div>
+    {% endif %}
+{% endblock %}

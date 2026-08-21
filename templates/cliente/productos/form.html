@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}{% if producto %}Editar producto{% else %}Nuevo producto{% endif %} &middot; Growth Horizon{% endblock %}
+{% block cabecera %}{% if producto %}Editar producto{% else %}Nuevo producto{% endif %}{% endblock %}
+{% block subcabecera %}Registra un producto del catálogo de {{ current_user.empresa.nombre }}.{% endblock %}
+
+{% block contenido %}
+    <div class="max-w-xl bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+        <form method="post" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium mb-1.5 text-slate-700">Nombre del producto *</label>
+                <input type="text" name="nombre" required value="{{ producto.nombre if producto else '' }}"
+                       class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none text-sm"
+                       placeholder="Ej. Café especial 500g">
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium mb-1.5 text-slate-700">Categoría</label>
+                    <input type="text" name="categoria" value="{{ producto.categoria if producto and producto.categoria else '' }}"
+                           class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none text-sm"
+                           placeholder="Ej. Bebidas, Alimentos...">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5 text-slate-700">Precio (S/)*</label>
+                    <input type="number" step="0.01" min="0" name="precio" required
+                           value="{{ '%.2f' % producto.precio if producto else '' }}"
+                           class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none text-sm"
+                           placeholder="0.00">
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+                <a href="{{ url_for('cliente.productos_listar') }}"
+                   class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm font-medium hover:bg-slate-50 transition">Cancelar</a>
+                <button type="submit"
+                        class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-900 text-sm font-semibold hover:opacity-90 transition">
+                    {% if producto %}Guardar cambios{% else %}Crear producto{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

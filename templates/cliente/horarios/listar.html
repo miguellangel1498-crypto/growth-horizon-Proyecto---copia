@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Horarios &middot; Growth Horizon{% endblock %}
+{% block cabecera %}Horarios de atención{% endblock %}
+{% block subcabecera %}Define cuándo atiende {{ current_user.empresa.nombre }}.{% endblock %}
+
+{% block contenido %}
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+            <p class="text-sm text-slate-500">{{ horarios | length }} día{{ 's' if horarios | length != 1 }} configurado{{ 's' if horarios | length != 1 }}</p>
+            <a href="{{ url_for('cliente.horarios_nuevo') }}" class="px-4 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-900 text-sm font-semibold hover:opacity-90 transition whitespace-nowrap">
+                ＋ Añadir horario
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+            {% for horario in horarios %}
+                <div class="rounded-2xl border border-slate-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-cyan-100 text-cyan-700 flex items-center justify-center text-xl">🕐</div>
+                        <form method="post" action="{{ url_for('cliente.horarios_eliminar', horario_id=horario.id) }}"
+                              onsubmit="return confirm('¿Eliminar el horario de {{ horario.dia }}?')">
+                            <button type="submit" class="text-slate-400 hover:text-rose-600 transition text-sm">Eliminar</button>
+                        </form>
+                    </div>
+                    <h3 class="font-bold text-slate-900">{{ horario.dia }}</h3>
+                    <p class="text-lg font-semibold text-cyan-700 mt-1">{{ horario.apertura }} – {{ horario.cierre }}</p>
+                </div>
+            {% else %}
+                <div class="col-span-full text-center py-16">
+                    <p class="text-slate-400 text-sm">Aún no has configurado ningún horario.</p>
+                    <a href="{{ url_for('cliente.horarios_nuevo') }}" class="inline-block mt-3 text-sm text-cyan-600 hover:text-cyan-700">＋ Configurar el primero</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

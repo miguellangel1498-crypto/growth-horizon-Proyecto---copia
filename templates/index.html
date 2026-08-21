@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Growth Horizon &middot; Inteligencia empresarial por sectores</title>
+    <meta name="description"
+        content="Plataforma de análisis para empresas: clasificación por sectores, gestión de productos y ventas, y analítica profunda con trazabilidad completa.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            900: '#134e4a',
+                            700: '#115e59',
+                            600: '#0f766e',
+                            500: '#0e7490',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        .bg-grid {
+            background-image: linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+            background-size: 44px 44px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-slate-200 antialiased">
+
+    <!-- ===== Barra de navegación ===== -->
+    <header class="sticky top-0 z-40 border-b border-slate-800/70 bg-slate-950/80 backdrop-blur">
+        <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+            <a href="#inicio" class="flex items-center gap-3">
+                <div
+                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-500 text-lg font-black text-slate-900">
+                    GH</div>
+                <span class="text-xl font-bold text-white">Growth Horizon</span>
+            </a>
+
+            <div class="hidden items-center gap-8 text-sm font-medium text-slate-300 md:flex">
+                <a href="#beneficios" class="transition hover:text-white">Beneficios</a>
+                <a href="#sectores" class="transition hover:text-white">Sectores</a>
+                <a href="#analisis" class="transition hover:text-white">Análisis</a>
+                <a href="#contacto" class="transition hover:text-white">Contacto</a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('main.dashboard') }}"
+                    class="px-4 py-2 text-sm font-medium rounded-lg bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-900 transition hover:opacity-90">
+                    Ir al panel
+                </a>
+                <a href="{{ url_for('auth.logout') }}"
+                    class="px-4 py-2 text-sm font-medium rounded-lg transition hover:bg-slate-800">Salir</a>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}"
+                    class="px-4 py-2 text-sm font-medium rounded-lg transition hover:bg-slate-800">Iniciar sesión</a>
+                <a href="{{ url_for('auth.registro') }}"
+                    class="px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-900 transition hover:opacity-90">
+                    Crear cuenta de empresa
+                </a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <!-- ===== Hero ===== -->
+    <section id="inicio" class="bg-grid relative overflow-hidden">
+        <div
+            class="pointer-events-none absolute -top-40 left-1/2 h-96 w-[60rem] -translate-x-1/2 rounded-full bg-cyan-500/20 blur-3xl">
+        </div>
+        <div class="mx-auto max-w-7xl px-6 py-24 md:py-32">
+            <div class="mx-auto max-w-3xl text-center">
+                <span
+                    class="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-800/60 px-4 py-1.5 text-xs font-medium text-cyan-300">
+                    <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+                    Plataforma de análisis y segmentación empresarial
+                </span>
+                <h1 class="mt-6 text-5xl font-black leading-tight tracking-tight text-white md:text-6xl">
+                    Convierte los datos de tu empresa en
+                    <span class="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">decisiones
+                        de crecimiento</span>
+                </h1>
+                <p class="mx-auto mt-6 max-w-2xl text-lg text-slate-400">
+                    Clasifica tu negocio por sector económico, registra tus productos, horarios y ventas, y obtén
+                    análisis profundos con métricas clave: los productos más vendidos y los horarios de mayor
+                    movimiento.
+                </p>
+                <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                    <a href="{{ url_for('auth.registro') }}"
+                        class="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 px-7 py-4 text-center font-semibold text-slate-900 shadow-lg shadow-cyan-500/20 transition sm:w-auto hover:opacity-90">
+                        Registrar mi empresa gratis
+                    </a>
+                    <a href="{{ url_for('auth.login') }}"
+                        class="w-full rounded-xl border border-slate-700 px-7 py-4 text-center font-medium transition hover:bg-slate-800 sm:w-auto">
+                        Acceder como empresa
+                    </a>
+                </div>
+                <p class="mt-6 text-sm text-slate-500">Sin costo inicial · El primer usuario de cada empresa es el
+                    administrador</p>
+            </div>
+
+            <!-- Métricas destacadas (demo) -->
+            <div class="mx-auto mt-16 grid max-w-4xl grid-cols-2 gap-4 md:grid-cols-4">
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 text-center">
+                    <p class="text-2xl font-black text-white">100%</p>
+                    <p class="mt-1 text-xs text-slate-500">Datos de tu empresa</p>
+                </div>
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 text-center">
+                    <p class="text-2xl font-black text-white">{{ sectores | length }}</p>
+                    <p class="mt-1 text-xs text-slate-500">Sectores económicos</p>
+                </div>
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 text-center">
+                    <p class="text-2xl font-black text-white">24/7</p>
+                    <p class="mt-1 text-xs text-slate-500">Trazabilidad completa</p>
+                </div>
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 text-center">
+                    <p class="text-2xl font-black text-white">Excel</p>
+                    <p class="mt-1 text-xs text-slate-500">Reportes exportables</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Beneficios ===== -->
+    <section id="beneficios" class="border-t border-slate-800/60 bg-slate-900/30 py-24">
+        <div class="mx-auto max-w-7xl px-6">
+            <div class="mx-auto max-w-2xl text-center">
+                <h2 class="text-3xl font-black text-white md:text-4xl">Todo lo que tu negocio necesita para crecer</h2>
+                <p class="mt-4 text-slate-400">Una plataforma completa que centraliza la operación y potencia el
+                    análisis de tu empresa.</p>
+            </div>
+
+            <div class="mt-14 grid gap-6 md:grid-cols-3">
+                <div
+                    class="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 transition hover:border-cyan-500/40">
+                    <div
+                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/15 text-2xl text-cyan-300">
+                        📊</div>
+                    <h3 class="mt-5 text-lg font-bold text-white">Análisis profundo</h3>
+                    <p class="mt-2 text-sm text-slate-400">Visualiza los productos más vendidos y el comportamiento de
+                        tus ventas por horario con gráficos estadísticos en tiempo real.</p>
+                </div>
+                <div
+                    class="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 transition hover:border-emerald-500/40">
+                    <div
+                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/15 text-2xl text-emerald-300">
+                        🗂️</div>
+                    <h3 class="mt-5 text-lg font-bold text-white">Segmentación por sectores</h3>
+                    <p class="mt-2 text-sm text-slate-400">Clasifica y filtra tu ecosistema por sectores económicos para
+                        una visión ordenada y accionable del mercado.</p>
+                </div>
+                <div
+                    class="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 transition hover:border-amber-500/40">
+                    <div
+                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/15 text-2xl text-amber-300">
+                        🛡️</div>
+                    <h3 class="mt-5 text-lg font-bold text-white">Auditoría y seguridad</h3>
+                    <p class="mt-2 text-sm text-slate-400">Cada acceso y modificación queda registrado con usuario, IP y
+                        marca temporal exacta. Acceso aislado por empresa.</p>
+                </div>
+            </div>
+
+            <div class="mt-6 grid gap-6 md:grid-cols-3">
+                <div
+                    class="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 transition hover:border-cyan-500/40">
+                    <div
+                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/15 text-2xl text-cyan-300">
+                        📦</div>
+                    <h3 class="mt-5 text-lg font-bold text-white">Gestión de productos</h3>
+                    <p class="mt-2 text-sm text-slate-400">Registra tu catálogo con precios y categorías, y controla el
+                        desempeño comercial de cada ítem.</p>
+                </div>
+                <div
+                    class="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 transition hover:border-emerald-500/40">
+                    <div
+                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/15 text-2xl text-emerald-300">
+                        📥</div>
+                    <h3 class="mt-5 text-lg font-bold text-white">Reportes en Excel</h3>
+                    <p class="mt-2 text-sm text-slate-400">Descarga al instante reportes de ventas e inventario en
+                        formato Excel, listos para compartir con tu equipo.</p>
+                </div>
+                <div
+                    class="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 transition hover:border-amber-500/40">
+                    <div
+                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/15 text-2xl text-amber-300">
+                        🕐</div>
+                    <h3 class="mt-5 text-lg font-bold text-white">Horarios inteligentes</h3>
+                    <p class="mt-2 text-sm text-slate-400">Define tus horarios de atención y cruza esa información con
+                        tus ventas para detectar picos de demanda.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Sectores atendidos ===== -->
+    <section id="sectores" class="border-t border-slate-800/60 py-24">
+        <div class="mx-auto max-w-7xl px-6">
+            <div class="mx-auto max-w-2xl text-center">
+                <h2 class="text-3xl font-black text-white md:text-4xl">Sectores económicos atendidos</h2>
+                <p class="mt-4 text-slate-400">Una solución de análisis diseñada para empresas de múltiples industrias.
+                </p>
+            </div>
+
+            <div class="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                {% if sectores %}
+                {% for sector in sectores %}
+                <div
+                    class="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-5 transition hover:border-slate-600">
+                    <span class="h-3 w-3 shrink-0 rounded-full" style="background-color: {{ sector.color }}"></span>
+                    <div>
+                        <p class="font-semibold text-white">{{ sector.nombre }}</p>
+                        <p class="text-xs text-slate-500">{{ sector.empresas.count() }} empresas</p>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="col-span-full mx-auto flex flex-wrap items-center justify-center gap-4 text-slate-400">
+                    <p class="text-sm">Tecnología &middot; Manufactura &middot; Comercio &middot; Agroindustria &middot;
+                        Financiero</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Análisis destacado ===== -->
+    <section id="analisis" class="border-t border-slate-800/60 bg-slate-900/30 py-24">
+        <div class="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2">
+            <div>
+                <span class="text-xs font-semibold uppercase tracking-widest text-cyan-400">Analítica empresarial</span>
+                <h2 class="mt-4 text-3xl font-black text-white md:text-4xl">Toma decisiones con datos reales, no con
+                    intuición</h2>
+                <p class="mt-5 text-slate-400">
+                    Nuestra ruta de análisis profundo <code
+                        class="rounded bg-slate-800 px-2 py-0.5 text-cyan-300">/analisis</code>
+                    procesa tus ventas para revelar ingresos totales, ticket promedio, productos más vendidos y los
+                    horarios
+                    con mayor movimiento del negocio.
+                </p>
+
+                <ul class="mt-8 space-y-4">
+                    <li class="flex items-start gap-3">
+                        <span
+                            class="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">✓</span>
+                        <span class="text-sm text-slate-300">Ingresos, unidades vendidas y ticket promedio al
+                            alcance</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span
+                            class="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">✓</span>
+                        <span class="text-sm text-slate-300">Ranking de productos por unidades e ingresos</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span
+                            class="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">✓</span>
+                        <span class="text-sm text-slate-300">Horas y días con mayor movimiento para optimizar
+                            turnos</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span
+                            class="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">✓</span>
+                        <span class="text-sm text-slate-300">Gráficos estadísticos con Chart.js</span>
+                    </li>
+                </ul>
+
+                <a href="{{ url_for('auth.registro') }}"
+                    class="mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 px-6 py-3.5 font-semibold text-slate-900 transition hover:opacity-90">
+                    Empieza a analizar tu negocio →
+                </a>
+            </div>
+
+            <div class="rounded-3xl border border-slate-800 bg-slate-900/60 p-6">
+                <p class="mb-4 text-sm font-semibold text-white">Productos más vendidos</p>
+                <div class="space-y-3">
+                    <div>
+                        <div class="mb-1 flex justify-between text-sm"><span class="text-slate-300">Café
+                                especial</span><span class="text-emerald-400">24,5 u</span></div>
+                        <div class="h-2.5 rounded-full bg-slate-800">
+                            <div class="h-full w-4/5 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="mb-1 flex justify-between text-sm"><span class="text-slate-300">Café
+                                latte</span><span class="text-emerald-400">19,0 u</span></div>
+                        <div class="h-2.5 rounded-full bg-slate-800">
+                            <div class="h-full w-3/5 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="mb-1 flex justify-between text-sm"><span class="text-slate-300">Sándwich
+                                gourmet</span><span class="text-emerald-400">14,0 u</span></div>
+                        <div class="h-2.5 rounded-full bg-slate-800">
+                            <div class="h-full w-1/2 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 border-t border-slate-800 pt-5">
+                    <p class="mb-4 text-sm font-semibold text-white">Horas con mayor movimiento</p>
+                    <div class="flex items-end gap-2 h-24">
+                        <div class="flex-1 rounded-t bg-amber-500/60" style="height:40%"></div>
+                        <div class="flex-1 rounded-t bg-amber-500/60" style="height:55%"></div>
+                        <div class="flex-1 rounded-t bg-amber-500/60" style="height:70%"></div>
+                        <div class="flex-1 rounded-t bg-emerald-500" style="height:100%"></div>
+                        <div class="flex-1 rounded-t bg-amber-500/60" style="height:60%"></div>
+                        <div class="flex-1 rounded-t bg-amber-500/40" style="height:35%"></div>
+                    </div>
+                    <p class="mt-2 text-xs text-slate-500">08:00 &ndash; 13:00 &middot; pico de actividad detectado a
+                        las 10:00</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA final ===== -->
+    <section class="border-t border-slate-800/60 py-20">
+        <div class="mx-auto max-w-4xl px-6 text-center">
+            <h2 class="text-3xl font-black text-white md:text-4xl">¿Listo para impulsar el crecimiento de tu empresa?
+            </h2>
+            <p class="mt-4 text-slate-400">Crea tu cuenta, registra tus primeros datos y empieza a ver tu negocio con
+                claridad.</p>
+            <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <a href="{{ url_for('auth.registro') }}"
+                    class="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 px-8 py-4 font-semibold text-slate-900 shadow-lg shadow-cyan-500/20 transition hover:opacity-90 sm:w-auto">
+                    Crear cuenta de empresa
+                </a>
+                <a href="{{ url_for('auth.login') }}"
+                    class="w-full rounded-xl border border-slate-700 px-8 py-4 font-medium transition hover:bg-slate-800 sm:w-auto">
+                    Ya tengo cuenta &middot; Iniciar sesión
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Footer ===== -->
+    <footer id="contacto" class="border-t border-slate-800/70 bg-slate-900/40">
+        <div class="mx-auto max-w-7xl px-6 py-14">
+            <div class="grid gap-10 md:grid-cols-4">
+                <div class="md:col-span-2">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-500 text-lg font-black text-slate-900">
+                            GH</div>
+                        <span class="text-lg font-bold text-white">Growth Horizon</span>
+                    </div>
+                    <p class="mt-4 max-w-sm text-sm text-slate-400">
+                        Plataforma de inteligencia empresarial que centraliza productos, horarios y ventas
+                        para ofrecer análisis accionable a empresas de diversos sectores económicos.
+                    </p>
+                    <div class="mt-5 flex gap-3">
+                        <a href="#" aria-label="LinkedIn"
+                            class="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800 text-slate-300 transition hover:bg-slate-700">in</a>
+                        <a href="#" aria-label="X"
+                            class="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800 text-slate-300 transition hover:bg-slate-700">𝕏</a>
+                        <a href="#" aria-label="YouTube"
+                            class="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800 text-slate-300 transition hover:bg-slate-700">▶</a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Plataforma</h4>
+                    <ul class="mt-4 space-y-3 text-sm">
+                        <li><a href="#inicio" class="text-slate-400 transition hover:text-white">Inicio</a></li>
+                        <li><a href="#beneficios" class="text-slate-400 transition hover:text-white">Beneficios</a></li>
+                        <li><a href="#sectores" class="text-slate-400 transition hover:text-white">Sectores</a></li>
+                        <li><a href="#analisis" class="text-slate-400 transition hover:text-white">Análisis</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Acceso</h4>
+                    <ul class="mt-4 space-y-3 text-sm">
+                        <li><a href="{{ url_for('auth.login') }}"
+                                class="text-slate-400 transition hover:text-white">Iniciar sesión</a></li>
+                        <li><a href="{{ url_for('auth.registro') }}"
+                                class="text-slate-400 transition hover:text-white">Registro de empresa</a></li>
+                        <li><a href="{{ url_for('main.dashboard') }}"
+                                class="text-slate-400 transition hover:text-white">Panel interno</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div
+                class="mt-12 flex flex-col items-center justify-between gap-3 border-t border-slate-800 pt-6 text-xs text-slate-500 sm:flex-row">
+                <p>&copy; 2026 Growth Horizon. Todos los derechos reservados.</p>
+                <p>Flask &middot; SQLAlchemy &middot; Tailwind CSS &middot; Chart.js</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>
