@@ -75,6 +75,10 @@
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint.startswith('empresas') %}bg-slate-800 text-white{% endif %}">
                         <span class="text-lg">🏢</span> Empresas
                     </a>
+                    <a href="{{ url_for('analisis.principal') }}"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint == 'analisis.principal' %}bg-slate-800 text-white{% endif %}">
+                        <span class="text-lg">📈</span> Análisis global
+                    </a>
                 </div>
                 {% endif %}
 

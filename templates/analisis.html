@@ -2,7 +2,7 @@
 
 {% block title %}Análisis &middot; Growth Horizon{% endblock %}
 {% block cabecera %}Análisis profundo{% endblock %}
-{% block subcabecera %}Métricas clave {{ 'de todo el ecosistema' if empresa is none else ('del negocio de ' + empresa.nombre) }}.{% endblock %}
+{% block subcabecera %}Métricas clave {{ 'de todo el ecosistema' if es_admin else ('del negocio de ' + empresa.nombre if empresa else 'de tu cuenta') }}.{% endblock %}
 
 {% block contenido %}
     {% set max_ventas_dia = ventas_por_dia[0][1] if ventas_por_dia and ventas_por_dia[0][1] > 0 else 1 %}

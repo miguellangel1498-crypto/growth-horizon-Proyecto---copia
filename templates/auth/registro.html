@@ -7,66 +7,110 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }</style>
 </head>
-<body class="h-full bg-slate-950 text-slate-200 antialiased">
+<body class="h-full bg-slate-100 text-slate-800 antialiased">
 
     <div class="min-h-full grid place-items-center px-6 py-12">
         <div class="w-full max-w-md space-y-8">
             <div class="text-center space-y-2">
-                <div class="mx-auto w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-500 flex items-center justify-center text-xl font-black text-slate-900">GH</div>
-                <h1 class="text-2xl font-bold text-white">Crear cuenta</h1>
-                <p class="text-sm text-slate-500">El primer usuario registrado obtiene rol de administrador.</p>
+                <div class="mx-auto w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-emerald-500 flex items-center justify-center text-xl font-black text-white">GH</div>
+                <h1 class="text-2xl font-bold text-slate-900">Crear cuenta</h1>
+                <p class="text-sm text-slate-500">Únete a la plataforma empresarial de Growth Horizon.</p>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 space-y-5">
+            <div class="bg-white border border-slate-200 rounded-2xl p-8 space-y-5">
                 {% with mensajes = get_flashed_messages(with_categories=true) %}
                     {% for categoria, mensaje in mensajes %}
                         <div class="px-4 py-3 rounded-lg text-sm font-medium border
-                            {% if categoria == 'error' %}bg-red-500/10 text-red-300 border-red-800
-                            {% elif categoria == 'success' %}bg-emerald-500/10 text-emerald-300 border-emerald-800
-                            {% else %}bg-sky-500/10 text-sky-300 border-sky-800{% endif %}">
+                            {% if categoria == 'error' %}bg-red-50 text-red-800 border-red-200
+                            {% elif categoria == 'success' %}bg-emerald-50 text-emerald-800 border-emerald-200
+                            {% else %}bg-sky-50 text-sky-800 border-sky-200{% endif %}">
                             {{ mensaje }}
                         </div>
                     {% endfor %}
                 {% endwith %}
 
                 <form method="post" class="space-y-5">
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="tipo_cuenta" value="persona" class="peer sr-only" {% if tipo_cuenta != 'empresa' %}checked{% endif %} onchange="alternarEmpresa(false)">
+                            <div class="text-center text-sm font-medium rounded-lg border border-slate-300 px-3 py-2.5 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:text-indigo-700">Soy usuario</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="tipo_cuenta" value="empresa" class="peer sr-only" {% if tipo_cuenta == 'empresa' %}checked{% endif %} onchange="alternarEmpresa(true)">
+                            <div class="text-center text-sm font-medium rounded-lg border border-slate-300 px-3 py-2.5 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:text-indigo-700">Soy empresa</div>
+                        </label>
+                    </div>
+
+                    <div id="campo-razon-social" class="{% if tipo_cuenta != 'empresa' %}hidden{% endif %}">
+                        <label class="block text-sm font-medium mb-1.5 text-slate-700">Nombre de la empresa</label>
+                        <input type="text" name="razon_social" value="{{ request.form.razon_social if tipo_cuenta == 'empresa' else '' }}"
+                               class="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
+                               placeholder="Mi Empresa S.A.C.">
+                    </div>
+
+                    <div id="campo-ruc-sector" class="{% if tipo_cuenta != 'empresa' %}hidden{% endif %} grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5 text-slate-700">RUC</label>
+                            <input type="text" name="ruc" value="{{ request.form.ruc if tipo_cuenta == 'empresa' else '' }}"
+                                   class="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
+                                   placeholder="20123456789">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5 text-slate-700">Sector</label>
+                            <select name="sector_id"
+                                    class="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm">
+                                <option value="">—</option>
+                                {% for sector in sectores %}
+                                <option value="{{ sector.id }}" {% if request.form.sector_id and request.form.sector_id|string == sector.id|string %}selected{% endif %}>{{ sector.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
                     <div>
-                        <label class="block text-sm font-medium mb-1.5 text-slate-300">Nombre completo</label>
+                        <label class="block text-sm font-medium mb-1.5 text-slate-700">Nombre completo</label>
                         <input type="text" name="nombre" required autofocus
-                               class="w-full px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none text-sm"
+                               class="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
                                placeholder="Juan Pérez">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1.5 text-slate-300">Correo electrónico</label>
+                        <label class="block text-sm font-medium mb-1.5 text-slate-700">Correo electrónico</label>
                         <input type="email" name="email" required
-                               class="w-full px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none text-sm"
+                               class="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
                                placeholder="nombre@empresa.com">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium mb-1.5 text-slate-300">Contraseña</label>
+                            <label class="block text-sm font-medium mb-1.5 text-slate-700">Contraseña</label>
                             <input type="password" name="password" required minlength="8"
-                                   class="w-full px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none text-sm"
+                                   class="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
                                    placeholder="Mínimo 8 caracteres">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-1.5 text-slate-300">Confirmar</label>
+                            <label class="block text-sm font-medium mb-1.5 text-slate-700">Confirmar</label>
                             <input type="password" name="confirmar_password" required minlength="8"
-                                   class="w-full px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none text-sm"
+                                   class="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
                                    placeholder="Repetir contraseña">
                         </div>
                     </div>
                     <button type="submit"
-                            class="w-full py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-900 font-semibold hover:opacity-90 transition">
+                            class="w-full py-3 rounded-lg bg-gradient-to-r from-indigo-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition">
                         Crear cuenta
                     </button>
                 </form>
             </div>
 
-            <p class="text-center text-sm">
-                ¿Ya tienes cuenta? <a href="{{ url_for('auth.login') }}" class="text-cyan-400 hover:text-cyan-300">Inicia sesión</a>
+            <p class="text-center text-sm text-slate-600">
+                ¿Ya tienes cuenta? <a href="{{ url_for('auth.login') }}" class="text-indigo-600 hover:text-indigo-700">Inicia sesión</a>
             </p>
         </div>
     </div>
+
+    <script>
+        function alternarEmpresa(mostrar) {
+            document.getElementById('campo-razon-social').classList.toggle('hidden', !mostrar);
+            document.getElementById('campo-ruc-sector').classList.toggle('hidden', !mostrar);
+        }
+    </script>
 </body>
 </html>

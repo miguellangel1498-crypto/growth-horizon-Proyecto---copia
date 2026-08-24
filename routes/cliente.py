@@ -21,6 +21,19 @@ def panel():
     ventas = Venta.query.filter_by(empresa_id=empresa.id).order_by(Venta.fecha.desc()).limit(8).all()
     total_ventas = sum(v.total for v in Venta.query.filter_by(empresa_id=empresa.id).all())
 
+    total_productos = len(productos)
+    total_horarios = len(horarios)
+    total_ventas_registradas = Venta.query.filter_by(empresa_id=empresa.id).count()
+
+    pasos = [
+        {"titulo": "Agrega tu primer producto", "descripcion": "Da de alta lo que vendes para empezar a medir.", "hecho": total_productos > 0, "url": url_for("cliente.productos_nuevo")},
+        {"titulo": "Configura tus horarios", "descripcion": "Define cuándo atiendes a tus clientes.", "hecho": total_horarios > 0, "url": url_for("cliente.horarios_nuevo")},
+        {"titulo": "Registra tu primera venta", "descripcion": "Empieza a ver métricas y análisis en vivo.", "hecho": total_ventas_registradas > 0, "url": url_for("cliente.ventas_nueva")},
+    ]
+    pasos_completados = sum(1 for p in pasos if p["hecho"])
+    progreso = int((pasos_completados / len(pasos)) * 100)
+    es_nuevo = pasos_completados == 0
+
     return render_template(
         "cliente/panel.html",
         empresa=empresa,
@@ -28,6 +41,13 @@ def panel():
         horarios=horarios,
         ventas=ventas,
         total_ventas=total_ventas,
+        total_productos=total_productos,
+        total_horarios=total_horarios,
+        total_ventas_registradas=total_ventas_registradas,
+        pasos=pasos,
+        pasos_completados=pasos_completados,
+        progreso=progreso,
+        es_nuevo=es_nuevo,
     )
 
 

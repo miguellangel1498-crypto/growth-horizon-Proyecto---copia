@@ -4,7 +4,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_user, logout_user
 
 from extensions import db
-from models import Usuario
+from models import Empresa, Sector, Usuario
 from services.auditoria import registrar_login, registrar_y_commit
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
@@ -58,6 +58,7 @@ def registro():
         return redirect(url_for("main.dashboard"))
 
     if request.method == "POST":
+        tipo_cuenta = request.form.get("tipo_cuenta", "persona")
         nombre = request.form.get("nombre", "").strip()
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
@@ -73,10 +74,47 @@ def registro():
         if Usuario.query.filter_by(email=email).first():
             errores.append("Ya existe una cuenta con ese correo.")
 
+        razon_social = None
+        ruc = None
+        sector_id = None
+        if tipo_cuenta == "empresa":
+            razon_social = request.form.get("razon_social", "").strip()
+            ruc = request.form.get("ruc", "").strip() or None
+            sector_id = request.form.get("sector_id", type=int) or None
+            if not razon_social:
+                errores.append("El nombre de la empresa es obligatorio.")
+            if ruc and Empresa.query.filter_by(ruc=ruc).first():
+                errores.append("Ya existe una empresa con ese RUC.")
+
         if errores:
             for e in errores:
                 flash(e, "error")
-            return render_template("auth/registro.html")
+            sectores = Sector.query.order_by(Sector.nombre.asc()).all()
+            return render_template("auth/registro.html", sectores=sectores, tipo_cuenta=tipo_cuenta)
+
+        if tipo_cuenta == "empresa":
+            empresa = Empresa(nombre=razon_social, ruc=ruc, sector_id=sector_id, estado="activo")
+            db.session.add(empresa)
+            db.session.commit()
+
+            usuario = Usuario(nombre=nombre, email=email, rol="cliente", empresa=empresa)
+            usuario.set_password(password)
+            db.session.add(usuario)
+            db.session.commit()
+
+            registrar_y_commit(
+                "REGISTRO_EMPRESA",
+                entidad="Usuario",
+                entidad_id=usuario.id,
+                detalle=f"Nueva empresa {razon_social} ({email})",
+            )
+
+            login_user(usuario)
+            usuario.ultimo_acceso = datetime.utcnow()
+            db.session.commit()
+
+            flash(f"¡Bienvenido/a, {empresa.nombre}! Tu panel está listo para comenzar.", "success")
+            return redirect(url_for("cliente.panel"))
 
         es_primero = Usuario.query.count() == 0
         usuario = Usuario(nombre=nombre, email=email, rol="admin" if es_primero else "analista")
@@ -98,7 +136,8 @@ def registro():
         flash(f"Bienvenido/a, {usuario.nombre.capitalize()}! Cuenta creada correctamente.", "success")
         return redirect(url_for("main.dashboard"))
 
-    return render_template("auth/registro.html")
+    sectores = Sector.query.order_by(Sector.nombre.asc()).all()
+    return render_template("auth/registro.html", sectores=sectores, tipo_cuenta="persona")
 
 
 @auth_bp.route("/salir")

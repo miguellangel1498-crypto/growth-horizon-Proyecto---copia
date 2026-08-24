@@ -18,8 +18,8 @@ def _hora_label(hora):
 @login_required
 def principal():
     empresa = current_user.empresa
-    es_admin = empresa is None
-    empresa_id = None if es_admin else empresa.id
+    es_admin = current_user.rol == "admin"
+    empresa_id = None if es_admin else (empresa.id if empresa else None)
 
     def cond_venta(*extra):
         if es_admin:
@@ -120,6 +120,7 @@ def principal():
     return render_template(
         "analisis.html",
         empresa=empresa,
+        es_admin=es_admin,
         total_ingresos=total_ingresos,
         total_unidades=total_unidades,
         total_ventas=total_ventas,
