@@ -55,6 +55,36 @@
         </div>
 
         <div class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-bold text-slate-900 dark:text-white mb-4">Datos de tu negocio</h3>
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Actividad</dt>
+                    <dd class="font-medium text-slate-800 dark:text-slate-200">{{ empresa.actividad or '—' }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Teléfono</dt>
+                    <dd class="font-medium text-slate-800 dark:text-slate-200">{{ empresa.telefono or '—' }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Correo</dt>
+                    <dd class="font-medium text-slate-800 dark:text-slate-200">{{ empresa.correo or '—' }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Sector</dt>
+                    <dd class="font-medium text-slate-800 dark:text-slate-200">{{ empresa.sector.nombre if empresa.sector else '—' }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Dirección</dt>
+                    <dd class="font-medium text-slate-800 dark:text-slate-200">{{ empresa.direccion or '—' }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Sitio web</dt>
+                    <dd class="font-medium text-slate-800 dark:text-slate-200">{{ empresa.sitio_web or '—' }}</dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="font-bold text-slate-900 dark:text-white">Primeros pasos</h3>

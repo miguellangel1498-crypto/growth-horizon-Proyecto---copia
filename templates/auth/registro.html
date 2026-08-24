@@ -43,7 +43,7 @@
 
                     <div id="campo-razon-social" class="{% if tipo_cuenta != 'empresa' %}hidden{% endif %}">
                         <label class="block text-sm font-medium mb-1.5 text-slate-700">Nombre de la empresa</label>
-                        <input type="text" name="razon_social" value="{{ request.form.razon_social if tipo_cuenta == 'empresa' else '' }}"
+                        <input type="text" name="razon_social" value="{{ (datos_empresa.razon_social if datos_empresa else request.form.razon_social) if tipo_cuenta == 'empresa' else '' }}"
                                class="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
                                placeholder="Mi Empresa S.A.C.">
                     </div>
@@ -51,7 +51,7 @@
                     <div id="campo-ruc-sector" class="{% if tipo_cuenta != 'empresa' %}hidden{% endif %} grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium mb-1.5 text-slate-700">RUC</label>
-                            <input type="text" name="ruc" value="{{ request.form.ruc if tipo_cuenta == 'empresa' else '' }}"
+                            <input type="text" name="ruc" value="{{ (datos_empresa.ruc if datos_empresa else request.form.ruc) if tipo_cuenta == 'empresa' else '' }}"
                                    class="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
                                    placeholder="20123456789">
                         </div>
@@ -61,9 +61,46 @@
                                     class="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm">
                                 <option value="">—</option>
                                 {% for sector in sectores %}
-                                <option value="{{ sector.id }}" {% if request.form.sector_id and request.form.sector_id|string == sector.id|string %}selected{% endif %}>{{ sector.nombre }}</option>
+                                <option value="{{ sector.id }}" {% if (datos_empresa.sector_id if datos_empresa else request.form.sector_id) and (datos_empresa.sector_id if datos_empresa else request.form.sector_id)|string == sector.id|string %}selected{% endif %}>{{ sector.nombre }}</option>
                                 {% endfor %}
                             </select>
+                        </div>
+                    </div>
+
+                    <div id="campo-actividad" class="{% if tipo_cuenta != 'empresa' %}hidden{% endif %}">
+                        <label class="block text-sm font-medium mb-1.5 text-slate-700">Actividad del negocio</label>
+                        <input type="text" name="actividad" value="{{ (datos_empresa.actividad if datos_empresa else request.form.actividad) if tipo_cuenta == 'empresa' else '' }}"
+                               class="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
+                               placeholder="Ej: Cafetería, venta de ropa, servicios desoftware">
+                    </div>
+
+                    <div id="campo-contacto" class="{% if tipo_cuenta != 'empresa' %}hidden{% endif %} grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5 text-slate-700">Teléfono de contacto</label>
+                            <input type="text" name="telefono" value="{{ (datos_empresa.telefono if datos_empresa else request.form.telefono) if tipo_cuenta == 'empresa' else '' }}"
+                                   class="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
+                                   placeholder="987654321">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5 text-slate-700">Correo del negocio <span class="text-slate-400">(opcional)</span></label>
+                            <input type="email" name="correo_empresa" value="{{ (datos_empresa.correo_empresa if datos_empresa else request.form.correo_empresa) if tipo_cuenta == 'empresa' else '' }}"
+                                   class="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
+                                   placeholder="ventas@empresa.com">
+                        </div>
+                    </div>
+
+                    <div id="campo-direccion-web" class="{% if tipo_cuenta != 'empresa' %}hidden{% endif %} grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5 text-slate-700">Dirección <span class="text-slate-400">(opcional)</span></label>
+                            <input type="text" name="direccion" value="{{ (datos_empresa.direccion if datos_empresa else request.form.direccion) if tipo_cuenta == 'empresa' else '' }}"
+                                   class="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
+                                   placeholder="Av. Principal 123, Lima">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5 text-slate-700">Sitio web <span class="text-slate-400">(opcional)</span></label>
+                            <input type="text" name="sitio_web" value="{{ (datos_empresa.sitio_web if datos_empresa else request.form.sitio_web) if tipo_cuenta == 'empresa' else '' }}"
+                                   class="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
+                                   placeholder="www.empresa.com">
                         </div>
                     </div>
 

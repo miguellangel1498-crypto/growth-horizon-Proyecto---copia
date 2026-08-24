@@ -77,12 +77,26 @@ def registro():
         razon_social = None
         ruc = None
         sector_id = None
+        actividad = None
+        correo_empresa = None
+        telefono = None
+        direccion = None
+        sitio_web = None
         if tipo_cuenta == "empresa":
             razon_social = request.form.get("razon_social", "").strip()
             ruc = request.form.get("ruc", "").strip() or None
             sector_id = request.form.get("sector_id", type=int) or None
+            actividad = request.form.get("actividad", "").strip() or None
+            correo_empresa = request.form.get("correo_empresa", "").strip() or None
+            telefono = request.form.get("telefono", "").strip() or None
+            direccion = request.form.get("direccion", "").strip() or None
+            sitio_web = request.form.get("sitio_web", "").strip() or None
             if not razon_social:
                 errores.append("El nombre de la empresa es obligatorio.")
+            if not actividad:
+                errores.append("Describe la actividad de tu negocio.")
+            if not telefono:
+                errores.append("El teléfono de contacto es obligatorio.")
             if ruc and Empresa.query.filter_by(ruc=ruc).first():
                 errores.append("Ya existe una empresa con ese RUC.")
 
@@ -90,10 +104,33 @@ def registro():
             for e in errores:
                 flash(e, "error")
             sectores = Sector.query.order_by(Sector.nombre.asc()).all()
-            return render_template("auth/registro.html", sectores=sectores, tipo_cuenta=tipo_cuenta)
+            return render_template(
+                "auth/registro.html",
+                sectores=sectores,
+                tipo_cuenta=tipo_cuenta,
+                datos_empresa={
+                    "razon_social": razon_social,
+                    "ruc": ruc,
+                    "actividad": actividad,
+                    "correo_empresa": correo_empresa,
+                    "telefono": telefono,
+                    "direccion": direccion,
+                    "sitio_web": sitio_web,
+                },
+            )
 
         if tipo_cuenta == "empresa":
-            empresa = Empresa(nombre=razon_social, ruc=ruc, sector_id=sector_id, estado="activo")
+            empresa = Empresa(
+                nombre=razon_social,
+                ruc=ruc,
+                sector_id=sector_id,
+                actividad=actividad,
+                correo=correo_empresa,
+                telefono=telefono,
+                direccion=direccion,
+                sitio_web=sitio_web,
+                estado="activo",
+            )
             db.session.add(empresa)
             db.session.commit()
 
@@ -137,7 +174,7 @@ def registro():
         return redirect(url_for("main.dashboard"))
 
     sectores = Sector.query.order_by(Sector.nombre.asc()).all()
-    return render_template("auth/registro.html", sectores=sectores, tipo_cuenta="persona")
+    return render_template("auth/registro.html", sectores=sectores, tipo_cuenta="persona", datos_empresa=None)
 
 
 @auth_bp.route("/salir")
