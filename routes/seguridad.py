@@ -2,14 +2,14 @@ from flask import Blueprint, render_template, request
 from flask_login import login_required
 
 from models import Auditoria, Usuario
-from routes.decoradores import admin_requerido
+from routes.decoradores import superadmin_requerido
 
 seguridad_bp = Blueprint("seguridad", __name__, url_prefix="/seguridad")
 
 
 @seguridad_bp.route("/auditoria")
 @login_required
-@admin_requerido
+@superadmin_requerido
 def auditoria():
     pagina = request.args.get("page", 1, type=int)
     accion = request.args.get("accion", "").strip()

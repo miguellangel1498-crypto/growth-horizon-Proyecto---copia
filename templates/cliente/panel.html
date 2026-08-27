@@ -15,9 +15,9 @@
                     <p class="text-white/90 mt-2 max-w-xl">Tu panel ya está listo. En sólo 3 pasos tendrás tu negocio
                         configurado y empezarás a ver métricas y análisis en vivo.</p>
                 </div>
-                <a href="{{ pasos[0]['url'] }}"
+                <a href="{{ url_for('cliente.ventas_nueva') if es_empleado else pasos[0]['url'] }}"
                    class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white text-indigo-700 font-semibold hover:bg-indigo-50 transition shrink-0">
-                    <span>🚀</span> Empezar ahora
+                    <span>🚀</span> {{ 'Registrar venta' if es_empleado else 'Empezar ahora' }}
                 </a>
             </div>
         </div>
@@ -45,6 +45,7 @@
                     <p class="text-2xl font-black text-slate-900 dark:text-white">{{ total_ventas_registradas }}</p>
                 </div>
             </div>
+            {% if puede_administrar %}
             <a href="{{ url_for('analisis.principal') }}" class="bg-gradient-to-br from-indigo-600 to-emerald-600 rounded-2xl p-6 hover:opacity-95 transition flex items-center justify-between text-white">
                 <div>
                     <p class="text-sm text-white/70 font-medium">Analiza tu negocio</p>
@@ -52,6 +53,7 @@
                 </div>
                 <span class="text-3xl">📈</span>
             </a>
+            {% endif %}
         </div>
 
         <div class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6">
@@ -97,6 +99,7 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {% for paso in pasos %}
+                {% if not (es_empleado and 'horario' in paso['titulo']|lower) %}
                 <a href="{{ paso['url'] }}" class="group flex items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-700 p-4 hover:border-indigo-300 dark:hover:border-indigo-500 transition">
                     <span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shrink-0
                         {{ 'bg-emerald-500 text-white' if paso['hecho'] else 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300' }}">
@@ -107,6 +110,7 @@
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ paso['descripcion'] }}</p>
                     </div>
                 </a>
+                {% endif %}
                 {% endfor %}
             </div>
         </div>
@@ -124,7 +128,7 @@
                             <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ venta.producto.nombre if venta.producto else 'Producto' }}</p>
                             <p class="text-xs text-slate-400">{{ venta.fecha.strftime('%d/%m/%Y %H:%M') }} · {{ venta.cantidad }} und.</p>
                         </div>
-                        <span class="font-semibold text-emerald-600">{{ venta.total | moneda }}</span>
+                        <span class="font-semibold text-emerald-600">{% if puede_ver_finanzas %}{{ venta.total | moneda }}{% else %}—{% endif %}</span>
                     </li>
                     {% else %}
                     <li class="px-6 py-10 text-center">
@@ -159,18 +163,21 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <a href="{{ url_for('cliente.productos_listar') }}" class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-indigo-300 dark:hover:border-indigo-500 transition text-center">
                 <span class="text-3xl">📦</span>
-                <p class="mt-2 font-semibold text-slate-800 dark:text-white">Administrar productos</p>
+                <p class="mt-2 font-semibold text-slate-800 dark:text-white">{% if es_empleado %}Consultar inventario{% else %}Administrar productos{% endif %}</p>
             </a>
+            {% if puede_administrar %}
             <a href="{{ url_for('cliente.horarios_nuevo') }}" class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-indigo-300 dark:hover:border-indigo-500 transition text-center">
                 <span class="text-3xl">🕐</span>
                 <p class="mt-2 font-semibold text-slate-800 dark:text-white">Configurar horario</p>
             </a>
+            {% endif %}
             <a href="{{ url_for('cliente.ventas_nueva') }}" class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-indigo-300 dark:hover:border-indigo-500 transition text-center">
                 <span class="text-3xl">💰</span>
                 <p class="mt-2 font-semibold text-slate-800 dark:text-white">Registrar venta</p>
             </a>
         </div>
 
+        {% if puede_administrar %}
         <div class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
@@ -189,5 +196,6 @@
                 </a>
             </div>
         </div>
+        {% endif %}
     </div>
 {% endblock %}

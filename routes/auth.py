@@ -5,6 +5,7 @@ from flask_login import current_user, login_user, logout_user
 
 from extensions import db
 from models import Empresa, Sector, Usuario
+from models.roles import ROL_ANALISTA, ROL_EMPRESA, ROL_SUPERADMIN, ESTADO_EMPRESA_PENDIENTE
 from services.auditoria import registrar_login, registrar_y_commit
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
@@ -37,6 +38,16 @@ def login():
             flash("Tu cuenta está inactiva. Contacta al administrador.", "error")
             return render_template("auth/login.html"), 403
 
+        if usuario.empresa is not None and not usuario.acceso_empresa_activa:
+            registrar_login(usuario, exitoso=False, motivo=f"Empresa {usuario.empresa.estado}")
+            if usuario.empresa.esta_pendiente:
+                flash("Tu empresa está pendiente de aprobación por el superadministrador. Te avisaremos cuando sea activada.", "warning")
+            elif usuario.empresa.esta_rechazada:
+                flash("El acceso de tu empresa fue rechazado. Contacta al superadministrador para más información.", "error")
+            else:
+                flash("El acceso de tu empresa está suspendido. Contacta al superadministrador.", "error")
+            return render_template("auth/login.html"), 403
+
         login_user(usuario, remember=recuerdame)
         usuario.ultimo_acceso = datetime.utcnow()
         db.session.commit()
@@ -63,6 +74,15 @@ def registro():
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
         confirmar = request.form.get("confirmar_password", "")
+
+        from models import Configuracion
+
+        if tipo_cuenta == "empresa" and not Configuracion.boolean("registro_empresas_abierto", True):
+            flash("El registro de empresas está deshabilitado temporalmente.", "error")
+            return redirect(url_for("auth.registro"))
+        if tipo_cuenta == "persona" and not Configuracion.boolean("permitir_registro_personas", True):
+            flash("El registro de usuarios particulares está deshabilitado temporalmente.", "error")
+            return redirect(url_for("auth.registro"))
 
         errores = []
         if not nombre or not email or not password:
@@ -129,12 +149,12 @@ def registro():
                 telefono=telefono,
                 direccion=direccion,
                 sitio_web=sitio_web,
-                estado="activo",
+                estado=ESTADO_EMPRESA_PENDIENTE,
             )
             db.session.add(empresa)
             db.session.commit()
 
-            usuario = Usuario(nombre=nombre, email=email, rol="cliente", empresa=empresa)
+            usuario = Usuario(nombre=nombre, email=email, rol=ROL_EMPRESA, empresa=empresa)
             usuario.set_password(password)
             db.session.add(usuario)
             db.session.commit()
@@ -143,18 +163,22 @@ def registro():
                 "REGISTRO_EMPRESA",
                 entidad="Usuario",
                 entidad_id=usuario.id,
-                detalle=f"Nueva empresa {razon_social} ({email})",
+                detalle=f"Nueva empresa {razon_social} ({email}) pendiente de aprobación",
             )
 
             login_user(usuario)
             usuario.ultimo_acceso = datetime.utcnow()
             db.session.commit()
 
-            flash(f"¡Bienvenido/a, {empresa.nombre}! Tu panel está listo para comenzar.", "success")
-            return redirect(url_for("cliente.panel"))
+            flash(
+                "¡Gracias por registrar tu empresa! Tu solicitud está pendiente de aprobación por el "
+                "superadministrador. Recibirás acceso una vez sea aprobada.",
+                "info",
+            )
+            return redirect(url_for("main.index"))
 
         es_primero = Usuario.query.count() == 0
-        usuario = Usuario(nombre=nombre, email=email, rol="admin" if es_primero else "analista")
+        usuario = Usuario(nombre=nombre, email=email, rol=ROL_SUPERADMIN if es_primero else ROL_ANALISTA)
         usuario.set_password(password)
         db.session.add(usuario)
         db.session.commit()
@@ -173,8 +197,19 @@ def registro():
         flash(f"Bienvenido/a, {usuario.nombre.capitalize()}! Cuenta creada correctamente.", "success")
         return redirect(url_for("main.dashboard"))
 
+    from models import Configuracion
+
     sectores = Sector.query.order_by(Sector.nombre.asc()).all()
-    return render_template("auth/registro.html", sectores=sectores, tipo_cuenta="persona", datos_empresa=None)
+    registro_empresas = Configuracion.boolean("registro_empresas_abierto", True)
+    registro_personas = Configuracion.boolean("permitir_registro_personas", True)
+    return render_template(
+        "auth/registro.html",
+        sectores=sectores,
+        tipo_cuenta="persona",
+        datos_empresa=None,
+        registro_empresas=registro_empresas,
+        registro_personas=registro_personas,
+    )
 
 
 @auth_bp.route("/salir")

@@ -57,7 +57,7 @@
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="font-bold text-slate-900">Actividad reciente</h3>
-                {% if current_user.rol == 'admin' %}
+                {% if current_user.es_superadmin %}
                 <a href="{{ url_for('seguridad.auditoria') }}" class="text-sm text-cyan-600 hover:text-cyan-700">Ver todo →</a>
                 {% endif %}
             </div>

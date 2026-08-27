@@ -3,6 +3,7 @@ from flask_login import current_user, login_required
 
 from extensions import db
 from models import HorarioAtencion, Producto, Venta
+from models.roles import ROL_EMPRESA, ROL_SUPERADMIN
 
 analisis_bp = Blueprint("analisis", __name__, url_prefix="/analisis")
 
@@ -17,8 +18,11 @@ def _hora_label(hora):
 @analisis_bp.route("/")
 @login_required
 def principal():
+    if current_user.rol not in (ROL_SUPERADMIN, ROL_EMPRESA):
+        abort(403)
+
     empresa = current_user.empresa
-    es_admin = current_user.rol == "admin"
+    es_admin = current_user.rol == ROL_SUPERADMIN
     empresa_id = None if es_admin else (empresa.id if empresa else None)
 
     def cond_venta(*extra):

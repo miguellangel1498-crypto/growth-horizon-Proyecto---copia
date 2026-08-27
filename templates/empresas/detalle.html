@@ -57,7 +57,7 @@
                         <p class="text-sm font-medium text-slate-800">{{ usuario.nombre }}</p>
                         <p class="text-xs text-slate-400">{{ usuario.email }}</p>
                     </div>
-                    <span class="px-2.5 py-1 rounded-full text-xs font-medium {{ 'bg-emerald-100 text-emerald-700' if usuario.rol == 'cliente' else 'bg-sky-100 text-sky-700' }}">{{ usuario.rol }}</span>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-medium {{ 'bg-emerald-100 text-emerald-700' if usuario.es_admin_empresa else ('bg-sky-100 text-sky-700' if usuario.es_empleado else 'bg-slate-100 text-slate-600') }}">{{ usuario.etiqueta_rol }}</span>
                 </li>
                 {% else %}
                 <li class="px-6 py-8 text-center text-slate-400 text-sm">Sin usuarios vinculados.</li>

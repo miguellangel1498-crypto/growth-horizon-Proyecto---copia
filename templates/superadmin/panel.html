@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Panel global &middot; Superadmin{% endblock %}
+{% block cabecera %}Panel del Superadministrador{% endblock %}
+{% block subcabecera %}Control global de la plataforma, empresas y permisos.{% endblock %}
+
+{% block contenido %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <a href="{{ url_for('superadmin.empresas_pendientes') }}"
+           class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-5 hover:border-amber-300 transition">
+            <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-2xl">⏳</div>
+            <div>
+                <p class="text-sm text-slate-500">Empresas por aprobar</p>
+                <p class="text-3xl font-black text-slate-900">{{ empresas_pendientes }}</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('superadmin.empresas') }}"
+           class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-5 hover:border-emerald-300 transition">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl">🏢</div>
+            <div>
+                <p class="text-sm text-slate-500">Empresas activas</p>
+                <p class="text-3xl font-black text-slate-900">{{ empresas_activas }}</p>
+            </div>
+        </a>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-5">
+            <div class="w-14 h-14 rounded-2xl bg-cyan-100 text-cyan-700 flex items-center justify-center text-2xl">👥</div>
+            <div>
+                <p class="text-sm text-slate-500">Usuarios registrados</p>
+                <p class="text-3xl font-black text-slate-900">{{ total_usuarios }}</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-5">
+            <div class="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-2xl">🧑‍💼</div>
+            <div>
+                <p class="text-sm text-slate-500">Admins. de empresa</p>
+                <p class="text-3xl font-black text-slate-900">{{ total_admins_empresa }}</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-5">
+            <div class="w-14 h-14 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center text-2xl">🧑‍🔧</div>
+            <div>
+                <p class="text-sm text-slate-500">Empleados</p>
+                <p class="text-3xl font-black text-slate-900">{{ total_empleados }}</p>
+            </div>
+        </div>
+
+        <a href="{{ url_for('superadmin.permisos') }}"
+           class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-5 hover:border-purple-300 transition">
+            <div class="w-14 h-14 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center text-2xl">🔐</div>
+            <div>
+                <p class="text-sm text-slate-500">Permisos globales</p>
+                <p class="text-base font-semibold text-slate-900">Configurar</p>
+            </div>
+        </a>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mt-6">
+        <h3 class="font-bold text-slate-900 mb-4">Empresas registradas recientemente</h3>
+        {% if empresas_recientes %}
+        <ul class="divide-y divide-slate-100">
+            {% for empresa in empresas_recientes %}
+            <li class="py-3 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-800">{{ empresa.nombre }}</p>
+                    <p class="text-xs text-slate-400">{{ empresa.ruc or '—' }} · {{ empresa.etiqueta_estado }}</p>
+                </div>
+                <a href="{{ url_for('superadmin.detalle_empresa', empresa_id=empresa.id) }}"
+                   class="text-sm text-cyan-600 hover:text-cyan-700">Ver →</a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-sm text-slate-500">Aún no hay empresas registradas.</p>
+        {% endif %}
+    </div>
+{% endblock %}

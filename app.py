@@ -5,6 +5,26 @@ from extensions import bcrypt, db, login_manager
 from services.auditoria import AutoAuditoria
 
 
+def _migrar_esquema():
+    from sqlalchemy import text
+
+    insp = db.inspect(db.engine)
+
+    if "usuarios" in insp.get_table_names():
+        columnas_usuario = [c["name"] for c in insp.get_columns("usuarios")]
+        if "cargo" not in columnas_usuario:
+            db.session.execute(text("ALTER TABLE usuarios ADD COLUMN cargo VARCHAR(80)"))
+        db.session.execute(text("UPDATE usuarios SET rol='superadmin' WHERE rol='admin'"))
+        db.session.execute(text("UPDATE usuarios SET rol='empresa' WHERE rol='cliente'"))
+
+    if "empresas" in insp.get_table_names():
+        columnas_empresa = [c["name"] for c in insp.get_columns("empresas")]
+        if "notas_admin" not in columnas_empresa:
+            db.session.execute(text("ALTER TABLE empresas ADD COLUMN notas_admin TEXT"))
+
+    db.session.commit()
+
+
 def crear_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
@@ -22,17 +42,23 @@ def crear_app(config_class=Config):
     @app.template_filter("moneda")
     def formato_moneda(valor):
         if valor is None:
-            return "S/ 0.00"
+            return "—"
         try:
-            return f"S/ {float(valor):,.2f}"
+            v = float(valor)
         except (TypeError, ValueError):
             return valor
+        texto = f"{v:,.2f}"
+        texto = texto.replace(",", "@").replace(".", ",").replace("@", ".")
+        return f"$ {texto} COP"
 
     @app.context_processor
     def contexto_global():
+        from models.roles import ESTADO_EMPRESA_PENDIENTE
+
         return {
             "cantidad_sectores": db.session.query(Sector).count(),
             "cantidad_empresas": db.session.query(Empresa).count(),
+            "empresas_pendientes": db.session.query(Empresa).filter(Empresa.estado == ESTADO_EMPRESA_PENDIENTE).count(),
             "sectores": db.session.query(Sector).order_by(Sector.nombre.asc()).all(),
         }
 
@@ -51,6 +77,7 @@ def crear_app(config_class=Config):
     from routes.main import main_bp
     from routes.seguridad import seguridad_bp
     from routes.sectores import sectores_bp
+    from routes.superadmin import superadmin_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
@@ -59,41 +86,59 @@ def crear_app(config_class=Config):
     app.register_blueprint(seguridad_bp)
     app.register_blueprint(cliente_bp)
     app.register_blueprint(analisis_bp)
+    app.register_blueprint(superadmin_bp)
 
     AutoAuditoria.configurar()
 
     with app.app_context():
         db.create_all()
+        _migrar_esquema()
 
         @app.cli.command("init-db")
         def init_db():
             db.create_all()
             print("Base de datos inicializada correctamente.")
 
-        @app.cli.command("seed")
-        def seed():
-            from models import HorarioAtencion, Producto, Venta
+    @app.cli.command("seed")
+    def seed():
+        from models import Configuracion, HorarioAtencion, Producto, Venta
+        from models.roles import (
+            ESTADO_EMPRESA_ACTIVO,
+            ROL_EMPRESA,
+            ROL_SUPERADMIN,
+        )
 
-            db.create_all()
-            if Sector.query.count() == 0:
-                db.session.add_all(
-                    [
-                        Sector(nombre="Tecnología", descripcion="Software, hardware y servicios digitales", color="#0ea5e9"),
-                        Sector(nombre="Manufactura", descripcion="Producción industrial y transformación", color="#10b981"),
-                        Sector(nombre="Comercio", descripcion="Venta de bienes y servicios", color="#8b5cf6"),
-                        Sector(nombre="Agroindustria", descripcion="Producción agrícola y procesamiento", color="#f59e0b"),
-                        Sector(nombre="Financiero", descripcion="Banca, seguros y fintech", color="#ef4444"),
-                    ]
-                )
-                db.session.commit()
-                print("Sectores creados.")
+        db.create_all()
 
-            if Usuario.query.count() == 0:
-                admin = Usuario(nombre="Administrador", email="admin@growthhorizon.com", rol="admin")
-                admin.set_password("Admin123!")
-                db.session.add(admin)
-                db.session.commit()
-                print("Usuario admin creado: admin@growthhorizon.com / Admin123!")
+        if Configuracion.obtener("registro_empresas_abierto") is None:
+            Configuracion.poner("registro_empresas_abierto", "on",
+                                "Permite que nuevas empresas se registren por su cuenta en la plataforma.")
+            Configuracion.poner("requiere_aprobacion_empresa", "on",
+                                "Las empresas que se registran quedan pendientes de aprobación del superadministrador.")
+            Configuracion.poner("permitir_registro_personas", "on",
+                                "Permite que usuarios particulares (analistas) se registren.")
+            db.session.commit()
+            print("Configuración global de permisos creada.")
+
+        if Sector.query.count() == 0:
+            db.session.add_all(
+                [
+                    Sector(nombre="Tecnología", descripcion="Software, hardware y servicios digitales", color="#0ea5e9"),
+                    Sector(nombre="Manufactura", descripcion="Producción industrial y transformación", color="#10b981"),
+                    Sector(nombre="Comercio", descripcion="Venta de bienes y servicios", color="#8b5cf6"),
+                    Sector(nombre="Agroindustria", descripcion="Producción agrícola y procesamiento", color="#f59e0b"),
+                    Sector(nombre="Financiero", descripcion="Banca, seguros y fintech", color="#ef4444"),
+                ]
+            )
+            db.session.commit()
+            print("Sectores creados.")
+
+        if Usuario.query.count() == 0:
+            admin = Usuario(nombre="Superadministrador", email="admin@growthhorizon.com", rol=ROL_SUPERADMIN)
+            admin.set_password("Admin123!")
+            db.session.add(admin)
+            db.session.commit()
+            print("Superadministrador creado: admin@growthhorizon.com / Admin123!")
 
             if Empresa.query.count() == 0:
                 tecnologia = Sector.query.filter_by(nombre="Tecnología").first()
@@ -123,53 +168,53 @@ def crear_app(config_class=Config):
                 db.session.add(empresa_demo)
                 db.session.commit()
 
-            cliente = Usuario.query.filter_by(email="cliente@growthhorizon.com").first()
-            if cliente is None:
-                cliente = Usuario(nombre="María López", email="cliente@growthhorizon.com", rol="cliente", empresa=empresa_demo)
-                cliente.set_password("Cliente123!")
-                db.session.add(cliente)
-                db.session.commit()
-                print("Usuario empresa creado: cliente@growthhorizon.com / Cliente123!")
+        cliente = Usuario.query.filter_by(email="cliente@growthhorizon.com").first()
+        if cliente is None:
+            cliente = Usuario(nombre="María López", email="cliente@growthhorizon.com", rol=ROL_EMPRESA, empresa=empresa_demo)
+            cliente.set_password("Cliente123!")
+            db.session.add(cliente)
+            db.session.commit()
+            print("Administrador de empresa creado: cliente@growthhorizon.com / Cliente123!")
 
-            if Producto.query.filter_by(empresa_id=empresa_demo.id).count() > 0:
-                print("Datos demo de la empresa ya cargados.")
-            else:
-                datos_productos = [
-                    ("Café especial 500g", "Bebidas", 24.50),
-                    ("Café latte", "Bebidas", 12.00),
-                    ("Sándwich gourmet", "Alimentos", 18.90),
-                    ("Cheesecake", "Postres", 15.50),
-                    ("Jugo natural 1L", "Bebidas", 16.00),
-                    ("Té de hierbas", "Bebidas", 8.50),
-                ]
-                for nombre, categoria, precio in datos_productos:
-                    db.session.add(Producto(empresa_id=empresa_demo.id, nombre=nombre, categoria=categoria, precio=precio))
-                db.session.commit()
+        if Producto.query.filter_by(empresa_id=empresa_demo.id).count() > 0:
+            print("Datos demo de la empresa ya cargados.")
+        else:
+            datos_productos = [
+                ("Café especial 500g", "Bebidas", 24.50),
+                ("Café latte", "Bebidas", 12.00),
+                ("Sándwich gourmet", "Alimentos", 18.90),
+                ("Cheesecake", "Postres", 15.50),
+                ("Jugo natural 1L", "Bebidas", 16.00),
+                ("Té de hierbas", "Bebidas", 8.50),
+            ]
+            for nombre, categoria, precio in datos_productos:
+                db.session.add(Producto(empresa_id=empresa_demo.id, nombre=nombre, categoria=categoria, precio=precio))
+            db.session.commit()
 
-                dias = [("Lunes", 0), ("Martes", 1), ("Miércoles", 2), ("Jueves", 3), ("Viernes", 4), ("Sábado", 5)]
-                for nombre, numero in dias[:5]:
-                    db.session.add(HorarioAtencion(empresa_id=empresa_demo.id, dia=nombre, dia_numero=numero, apertura="08:00", cierre="17:00"))
-                db.session.add(HorarioAtencion(empresa_id=empresa_demo.id, dia="Sábado", dia_numero=5, apertura="09:00", cierre="13:00"))
-                db.session.commit()
+            dias = [("Lunes", 0), ("Martes", 1), ("Miércoles", 2), ("Jueves", 3), ("Viernes", 4), ("Sábado", 5)]
+            for nombre, numero in dias[:5]:
+                db.session.add(HorarioAtencion(empresa_id=empresa_demo.id, dia=nombre, dia_numero=numero, apertura="08:00", cierre="17:00"))
+            db.session.add(HorarioAtencion(empresa_id=empresa_demo.id, dia="Sábado", dia_numero=5, apertura="09:00", cierre="13:00"))
+            db.session.commit()
 
-                productos = Producto.query.filter_by(empresa_id=empresa_demo.id).all()
-                import random
+            productos = Producto.query.filter_by(empresa_id=empresa_demo.id).all()
+            import random
 
-                base = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
-                ventas = []
-                for i in range(35):
-                    producto = random.choice(productos)
-                    cantidad = random.randint(1, 4)
-                    hora = random.randint(7, 19)
-                    dia = random.randint(0, 5)
-                    momento = base - timedelta(days=dia, hours=(24 - hora))
-                    ventas.append(Venta(empresa_id=empresa_demo.id, producto_id=producto.id,
-                                        cantidad=cantidad, precio_unitario=producto.precio, fecha=momento))
-                db.session.add_all(ventas)
-                db.session.commit()
-                print("Café Horizonte listo con productos, horarios y 35 ventas demo.")
+            base = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+            ventas = []
+            for i in range(35):
+                producto = random.choice(productos)
+                cantidad = random.randint(1, 4)
+                hora = random.randint(7, 19)
+                dia = random.randint(0, 5)
+                momento = base - timedelta(days=dia, hours=(24 - hora))
+                ventas.append(Venta(empresa_id=empresa_demo.id, producto_id=producto.id,
+                                    cantidad=cantidad, precio_unitario=producto.precio, fecha=momento))
+            db.session.add_all(ventas)
+            db.session.commit()
+            print("Café Horizonte listo con productos, horarios y 35 ventas demo.")
 
-            print("Datos semilla listos.")
+        print("Datos semilla listos.")
 
     return app
 

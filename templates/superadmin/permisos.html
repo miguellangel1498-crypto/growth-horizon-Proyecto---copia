@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Permisos globales &middot; Superadmin{% endblock %}
+{% block cabecera %}Permisos globales{% endblock %}
+{% block subcabecera %}Configura el acceso de la plataforma y revisa la matriz de permisos por rol.{% endblock %}
+
+{% block contenido %}
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+        <h3 class="font-bold text-slate-900 mb-1">Configuración de acceso</h3>
+        <p class="text-sm text-slate-500 mb-4">Define qué pueden hacer los nuevos usuarios al registrarse en Growth Horizon.</p>
+        <form method="post" class="space-y-3">
+            <label class="flex items-start gap-3">
+                <input type="checkbox" name="registro_empresas_abierto" {% if toggles.registro_empresas_abierto %}checked{% endif %}
+                       class="mt-1 h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500">
+                <span>
+                    <span class="block text-sm font-medium text-slate-800">Registro abierto de empresas</span>
+                    <span class="block text-xs text-slate-500">Las empresas pueden registrarse por su cuenta (quedan pendientes de aprobación).</span>
+                </span>
+            </label>
+            <label class="flex items-start gap-3">
+                <input type="checkbox" name="requiere_aprobacion_empresa" {% if toggles.requiere_aprobacion_empresa %}checked{% endif %}
+                       class="mt-1 h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500">
+                <span>
+                    <span class="block text-sm font-medium text-slate-800">Exigir aprobación del superadministrador</span>
+                    <span class="block text-xs text-slate-500">Las empresas nuevas no tienen acceso hasta ser aprobadas.</span>
+                </span>
+            </label>
+            <label class="flex items-start gap-3">
+                <input type="checkbox" name="permitir_registro_personas" {% if toggles.permitir_registro_personas %}checked{% endif %}
+                       class="mt-1 h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500">
+                <span>
+                    <span class="block text-sm font-medium text-slate-800">Permitir registro de usuarios particulares (analistas)</span>
+                    <span class="block text-xs text-slate-500">Usuarios sin empresa que solo consultan el ecosistema global.</span>
+                </span>
+            </label>
+            <div>
+                <button type="submit" class="px-4 py-2.5 rounded-lg bg-cyan-600 text-white text-sm font-semibold hover:bg-cyan-700 transition">
+                    Guardar configuración
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <h3 class="font-bold text-slate-900 p-6 pb-0">Matriz de permisos por rol</h3>
+        <div class="overflow-x-auto p-6">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs uppercase tracking-wider text-slate-500 border-b border-slate-100">
+                        <th class="py-3 pr-4 font-semibold">Permiso</th>
+                        {% for rol in roles %}
+                        <th class="py-3 px-3 font-semibold text-center capitalize">{{ rol }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for fila in matriz %}
+                    <tr>
+                        <td class="py-3 pr-4 text-slate-800">{{ fila.permiso }}</td>
+                        {% for rol in roles %}
+                        <td class="py-3 px-3 text-center">
+                            {% if fila[rol] %}
+                            <span class="text-emerald-600 font-bold">✓</span>
+                            {% else %}
+                            <span class="text-slate-300">—</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

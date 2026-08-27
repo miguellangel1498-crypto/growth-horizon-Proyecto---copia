@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Empresas por aprobar &middot; Superadmin{% endblock %}
+{% block cabecera %}Empresas pendientes de aprobación{% endblock %}
+{% block subcabecera %}Revisa, aprueba o deniega el acceso de las empresas que se registran.{% endblock %}
+
+{% block contenido %}
+    {% if empresas %}
+    <div class="space-y-4" x-data="{ rechazar: null }">
+        {% for empresa in empresas %}
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">{{ empresa.nombre }}</h3>
+                    <p class="text-sm text-slate-500 mt-1">
+                        RUC: {{ empresa.ruc or '—' }} · Sector: {{ empresa.sector.nombre if empresa.sector else '—' }}
+                    </p>
+                    <p class="text-sm text-slate-500">Actividad: {{ empresa.actividad or '—' }}</p>
+                    <p class="text-xs text-slate-400 mt-1">Registrada el {{ empresa.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ url_for('superadmin.detalle_empresa', empresa_id=empresa.id) }}"
+                       class="px-4 py-2.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50 transition">
+                        Ver detalle
+                    </a>
+                    <form method="post" action="{{ url_for('superadmin.aprobar_empresa', empresa_id=empresa.id) }}">
+                        <button type="submit"
+                                class="px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition">
+                            ✓ Aprobar
+                        </button>
+                    </form>
+                    <button type="button" @click="rechazar = {{ empresa.id }}"
+                            class="px-4 py-2.5 rounded-lg bg-rose-600 text-white text-sm font-semibold hover:bg-rose-700 transition">
+                        ✕ Rechazar
+                    </button>
+                </div>
+            </div>
+
+            <div x-show="rechazar == {{ empresa.id }}" x-cloak class="mt-4 rounded-xl bg-rose-50 border border-rose-200 p-4">
+                <form method="post" action="{{ url_for('superadmin.rechazar_empresa', empresa_id=empresa.id) }}">
+                    <label class="block text-sm font-medium text-rose-800 mb-1.5">Motivo del rechazo</label>
+                    <textarea name="motivo" rows="2"
+                              class="w-full px-3 py-2 rounded-lg border border-rose-300 outline-none text-sm"
+                              placeholder="Explícale a la empresa por qué se rechaza su solicitud"></textarea>
+                    <div class="flex gap-2 mt-2">
+                        <button type="submit"
+                                class="px-4 py-2 rounded-lg bg-rose-600 text-white text-sm font-semibold hover:bg-rose-700 transition">
+                            Confirmar rechazo
+                        </button>
+                        <button type="button" @click="rechazar = null"
+                                class="px-4 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50 transition">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
+        <p class="text-4xl">🎉</p>
+        <p class="text-slate-500 mt-2">No hay empresas pendientes de aprobación.</p>
+        <a href="{{ url_for('superadmin.empresas') }}" class="inline-block mt-4 text-sm text-cyan-600 hover:text-cyan-700">Ver todas las empresas →</a>
+    </div>
+    {% endif %}
+{% endblock %}

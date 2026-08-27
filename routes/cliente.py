@@ -4,8 +4,9 @@ from flask import Blueprint, abort, flash, redirect, render_template, request, s
 from flask_login import current_user, login_required
 
 from extensions import db
-from models import DIAS_SEMANA, HorarioAtencion, Producto, Venta
-from routes.decoradores import requiere_empresa
+from models import DIAS_SEMANA, HorarioAtencion, Producto, Usuario, Venta
+from models.roles import ROL_EMPLEADO, ROL_EMPRESA
+from routes.decoradores import admin_empresa_requerido, requiere_empresa
 from services.exporter import exportar_inventario, exportar_ventas
 
 cliente_bp = Blueprint("cliente", __name__, url_prefix="/mi-empresa")
@@ -15,15 +16,21 @@ cliente_bp = Blueprint("cliente", __name__, url_prefix="/mi-empresa")
 @login_required
 @requiere_empresa
 def panel():
+    if not current_user.acceso_empresa_activa:
+        abort(403)
     empresa = current_user.empresa
     productos = Producto.query.filter_by(empresa_id=empresa.id).order_by(Producto.nombre.asc()).all()
     horarios = HorarioAtencion.query.filter_by(empresa_id=empresa.id).order_by(HorarioAtencion.dia_numero.asc()).all()
     ventas = Venta.query.filter_by(empresa_id=empresa.id).order_by(Venta.fecha.desc()).limit(8).all()
-    total_ventas = sum(v.total for v in Venta.query.filter_by(empresa_id=empresa.id).all())
+    total_ventas = sum(v.total for v in Venta.query.filter_by(empresa_id=empresa.id).all()) if current_user.puede_ver_finanzas else 0
 
     total_productos = len(productos)
     total_horarios = len(horarios)
     total_ventas_registradas = Venta.query.filter_by(empresa_id=empresa.id).count()
+    es_empleado = current_user.es_empleado
+    puede_ver_finanzas = current_user.puede_ver_finanzas
+    puede_administrar = current_user.puede_administrar
+    puede_gestionar_empleados = current_user.puede_gestionar_empleados
 
     pasos = [
         {"titulo": "Agrega tu primer producto", "descripcion": "Da de alta lo que vendes para empezar a medir.", "hecho": total_productos > 0, "url": url_for("cliente.productos_nuevo")},
@@ -48,11 +55,17 @@ def panel():
         pasos_completados=pasos_completados,
         progreso=progreso,
         es_nuevo=es_nuevo,
+        es_empleado=es_empleado,
+        puede_ver_finanzas=puede_ver_finanzas,
+        puede_administrar=puede_administrar,
+        puede_gestionar_empleados=puede_gestionar_empleados,
     )
 
 
 def _espectiva_empresa():
     if current_user.empresa is None:
+        abort(403)
+    if not current_user.acceso_empresa_activa:
         abort(403)
     return current_user.empresa.id
 
@@ -74,7 +87,7 @@ def productos_listar():
 
 @cliente_bp.route("/productos/nuevo", methods=["GET", "POST"])
 @login_required
-@requiere_empresa
+@admin_empresa_requerido
 def productos_nuevo():
     empresa_id = _espectiva_empresa()
     if request.method == "POST":
@@ -105,7 +118,7 @@ def productos_nuevo():
 
 @cliente_bp.route("/productos/<int:producto_id>/editar", methods=["GET", "POST"])
 @login_required
-@requiere_empresa
+@admin_empresa_requerido
 def productos_editar(producto_id):
     empresa_id = _espectiva_empresa()
     producto = Producto.query.filter_by(id=producto_id, empresa_id=empresa_id).first_or_404()
@@ -140,7 +153,7 @@ def productos_editar(producto_id):
 
 @cliente_bp.route("/productos/<int:producto_id>/eliminar", methods=["POST"])
 @login_required
-@requiere_empresa
+@admin_empresa_requerido
 def productos_eliminar(producto_id):
     empresa_id = _espectiva_empresa()
     producto = Producto.query.filter_by(id=producto_id, empresa_id=empresa_id).first_or_404()
@@ -161,7 +174,7 @@ def horarios_listar():
 
 @cliente_bp.route("/horarios/nuevo", methods=["GET", "POST"])
 @login_required
-@requiere_empresa
+@admin_empresa_requerido
 def horarios_nuevo():
     empresa_id = _espectiva_empresa()
     if request.method == "POST":
@@ -185,7 +198,7 @@ def horarios_nuevo():
 
 @cliente_bp.route("/horarios/<int:horario_id>/eliminar", methods=["POST"])
 @login_required
-@requiere_empresa
+@admin_empresa_requerido
 def horarios_eliminar(horario_id):
     empresa_id = _espectiva_empresa()
     horario = HorarioAtencion.query.filter_by(id=horario_id, empresa_id=empresa_id).first_or_404()
@@ -201,8 +214,9 @@ def horarios_eliminar(horario_id):
 def ventas_listar():
     empresa_id = _espectiva_empresa()
     ventas = Venta.query.filter_by(empresa_id=empresa_id).order_by(Venta.fecha.desc()).all()
-    total_general = sum(v.total for v in ventas)
-    return render_template("cliente/ventas/listar.html", ventas=ventas, total_general=total_general)
+    mostrar_finanzas = current_user.puede_ver_finanzas
+    total_general = sum(v.total for v in ventas) if mostrar_finanzas else 0
+    return render_template("cliente/ventas/listar.html", ventas=ventas, total_general=total_general, mostrar_finanzas=mostrar_finanzas)
 
 
 @cliente_bp.route("/ventas/nueva", methods=["GET", "POST"])
@@ -252,7 +266,7 @@ def ventas_nueva():
 
 @cliente_bp.route("/exportar/ventas")
 @login_required
-@requiere_empresa
+@admin_empresa_requerido
 def exportar_ventas_xlsx():
     empresa_id = _espectiva_empresa()
     ventas = Venta.query.filter_by(empresa_id=empresa_id).order_by(Venta.fecha.desc()).all()
@@ -281,7 +295,7 @@ def exportar_ventas_xlsx():
 
 @cliente_bp.route("/exportar/inventario")
 @login_required
-@requiere_empresa
+@admin_empresa_requerido
 def exportar_inventario_xlsx():
     empresa_id = _espectiva_empresa()
     productos = Producto.query.filter_by(empresa_id=empresa_id).order_by(Producto.nombre.asc()).all()
@@ -314,7 +328,7 @@ def exportar_inventario_xlsx():
 
 @cliente_bp.route("/ventas/<int:venta_id>/eliminar", methods=["POST"])
 @login_required
-@requiere_empresa
+@admin_empresa_requerido
 def ventas_eliminar(venta_id):
     empresa_id = _espectiva_empresa()
     venta = Venta.query.filter_by(id=venta_id, empresa_id=empresa_id).first_or_404()
@@ -322,3 +336,95 @@ def ventas_eliminar(venta_id):
     db.session.commit()
     flash("Venta eliminada.", "info")
     return redirect(url_for("cliente.ventas_listar"))
+
+
+@cliente_bp.route("/empleados")
+@login_required
+@admin_empresa_requerido
+def empleados_listar():
+    empresa_id = _espectiva_empresa()
+    empleados = (
+        Usuario.query.filter_by(empresa_id=empresa_id, rol=ROL_EMPLEADO)
+        .order_by(Usuario.nombre.asc())
+        .all()
+    )
+    return render_template("cliente/empleados/listar.html", empleados=empleados, empresa=current_user.empresa)
+
+
+@cliente_bp.route("/empleados/nuevo", methods=["GET", "POST"])
+@login_required
+@admin_empresa_requerido
+def empleados_nuevo():
+    empresa_id = _espectiva_empresa()
+
+    if request.method == "POST":
+        nombre = request.form.get("nombre", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        cargo = request.form.get("cargo", "").strip() or None
+        password = request.form.get("password", "")
+        confirmar = request.form.get("confirmar_password", "")
+
+        errores = []
+        if not nombre or not email:
+            errores.append("El nombre y el correo son obligatorios.")
+        if len(password) < 8:
+            errores.append("La contraseña debe tener al menos 8 caracteres.")
+        if password != confirmar:
+            errores.append("Las contraseñas no coinciden.")
+        if Usuario.query.filter_by(email=email).first():
+            errores.append("Ya existe una cuenta con ese correo.")
+
+        if errores:
+            for e in errores:
+                flash(e, "error")
+            return render_template("cliente/empleados/form.html", empleado=None)
+
+        empleado = Usuario(
+            nombre=nombre,
+            email=email,
+            rol=ROL_EMPLEADO,
+            cargo=cargo,
+            empresa_id=empresa_id,
+        )
+        empleado.set_password(password)
+        db.session.add(empleado)
+        db.session.commit()
+
+        from services.auditoria import registrar_y_commit
+
+        registrar_y_commit(
+            "CREACION_EMPLEADO",
+            entidad="Usuario",
+            entidad_id=empleado.id,
+            detalle=f"Empleado {email} creado para {current_user.empresa.nombre}",
+        )
+
+        flash(f"Empleado '{nombre}' registrado correctamente.", "success")
+        return redirect(url_for("cliente.empleados_listar"))
+
+    return render_template("cliente/empleados/form.html", empleado=None)
+
+
+@cliente_bp.route("/empleados/<int:empleado_id>/estado", methods=["POST"])
+@login_required
+@admin_empresa_requerido
+def empleados_cambiar_estado(empleado_id):
+    empresa_id = _espectiva_empresa()
+    empleado = Usuario.query.filter_by(id=empleado_id, empresa_id=empresa_id, rol=ROL_EMPLEADO).first_or_404()
+    empleado.activo = not empleado.activo
+    db.session.commit()
+    flash(f"El empleado '{empleado.nombre}' ahora está {'activo' if empleado.activo else 'inactivo'}.", "info")
+    return redirect(url_for("cliente.empleados_listar"))
+
+
+@cliente_bp.route("/empleados/<int:empleado_id>/eliminar", methods=["POST"])
+@login_required
+@admin_empresa_requerido
+def empleados_eliminar(empleado_id):
+    empresa_id = _espectiva_empresa()
+    empleado = Usuario.query.filter_by(id=empleado_id, empresa_id=empresa_id, rol=ROL_EMPLEADO).first_or_404()
+    nombre = empleado.nombre
+    db.session.delete(empleado)
+    db.session.commit()
+    flash(f"Empleado '{nombre}' eliminado.", "info")
+    return redirect(url_for("cliente.empleados_listar"))

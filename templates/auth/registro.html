@@ -31,15 +31,26 @@
 
                 <form method="post" class="space-y-5">
                     <div class="grid grid-cols-2 gap-3">
+                        {% if registro_personas %}
                         <label class="cursor-pointer">
                             <input type="radio" name="tipo_cuenta" value="persona" class="peer sr-only" {% if tipo_cuenta != 'empresa' %}checked{% endif %} onchange="alternarEmpresa(false)">
                             <div class="text-center text-sm font-medium rounded-lg border border-slate-300 px-3 py-2.5 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:text-indigo-700">Soy usuario</div>
                         </label>
+                        {% endif %}
+                        {% if registro_empresas %}
                         <label class="cursor-pointer">
-                            <input type="radio" name="tipo_cuenta" value="empresa" class="peer sr-only" {% if tipo_cuenta == 'empresa' %}checked{% endif %} onchange="alternarEmpresa(true)">
+                            <input type="radio" name="tipo_cuenta" value="empresa" class="peer sr-only" {% if tipo_cuenta == 'empresa' or not registro_personas %}checked{% endif %} onchange="alternarEmpresa(true)">
                             <div class="text-center text-sm font-medium rounded-lg border border-slate-300 px-3 py-2.5 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:text-indigo-700">Soy empresa</div>
                         </label>
+                        {% endif %}
                     </div>
+
+                    {% if registro_empresas %}
+                    <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                        Al registrar tu empresa, esta quedará <strong>pendiente de aprobación</strong> por el
+                        superadministrador antes de poder acceder al panel.
+                    </p>
+                    {% endif %}
 
                     <div id="campo-razon-social" class="{% if tipo_cuenta != 'empresa' %}hidden{% endif %}">
                         <label class="block text-sm font-medium mb-1.5 text-slate-700">Nombre de la empresa</label>

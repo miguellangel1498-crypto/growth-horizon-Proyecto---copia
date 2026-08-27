@@ -2,6 +2,13 @@ from flask_login import UserMixin
 
 from extensions import db
 from models.base import TimestampMixin
+from models.roles import (
+    ROL_ANALISTA,
+    ROL_EMPLEADO,
+    ROL_EMPRESA,
+    ROL_SUPERADMIN,
+    rol_tiene_permiso,
+)
 
 
 class Usuario(UserMixin, TimestampMixin, db.Model):
@@ -11,7 +18,8 @@ class Usuario(UserMixin, TimestampMixin, db.Model):
     nombre = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(180), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
-    rol = db.Column(db.String(40), nullable=False, default="analista")
+    rol = db.Column(db.String(40), nullable=False, default=ROL_ANALISTA)
+    cargo = db.Column(db.String(80), nullable=True)
     activo = db.Column(db.Boolean, nullable=False, default=True)
     sector_id = db.Column(db.Integer, db.ForeignKey("sectores.id"), nullable=True)
     empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id", ondelete="SET NULL"), nullable=True)
@@ -32,12 +40,57 @@ class Usuario(UserMixin, TimestampMixin, db.Model):
         return bcrypt.check_password_hash(self.password_hash, password)
 
     @property
+    def es_superadmin(self):
+        return self.rol == ROL_SUPERADMIN
+
+    @property
+    def es_admin_empresa(self):
+        return self.rol == ROL_EMPRESA
+
+    @property
+    def es_empleado(self):
+        return self.rol == ROL_EMPLEADO
+
+    @property
+    def es_analista(self):
+        return self.rol == ROL_ANALISTA
+
+    @property
     def es_admin(self):
-        return self.rol == "admin"
+        return self.rol in (ROL_SUPERADMIN, ROL_EMPRESA)
+
+    @property
+    def tiene_empresa(self):
+        return self.empresa is not None
 
     @property
     def es_empresa(self):
-        return self.empresa is not None
+        return self.tiene_empresa
+
+    @property
+    def acceso_empresa_activa(self):
+        return self.empresa is None or self.empresa.estado == "activo"
+
+    @property
+    def puede_ver_finanzas(self):
+        return rol_tiene_permiso(self.rol, "Reportes financieros (COP)")
+
+    @property
+    def puede_administrar(self):
+        return rol_tiene_permiso(self.rol, "Configuración y horarios")
+
+    @property
+    def puede_gestionar_empleados(self):
+        return rol_tiene_permiso(self.rol, "Gestionar empleados")
+
+    @property
+    def etiqueta_rol(self):
+        from models.roles import ROLES_DISPONIBLES
+
+        return ROLES_DISPONIBLES.get(self.rol, self.rol)
+
+    def tiene_permiso(self, clave):
+        return rol_tiene_permiso(self.rol, clave)
 
     def __repr__(self):
         return f"<Usuario {self.email}>"

@@ -3,14 +3,14 @@ from flask_login import login_required
 
 from extensions import db
 from models import Sector
-from routes.decoradores import admin_requerido
+from routes.decoradores import superadmin_requerido
 
 sectores_bp = Blueprint("sectores", __name__, url_prefix="/sectores")
 
 
 @sectores_bp.route("/")
 @login_required
-@admin_requerido
+@superadmin_requerido
 def listar():
     sectores = Sector.query.order_by(Sector.nombre.asc()).all()
     return render_template("sectores/listar.html", sectores=sectores)
@@ -18,7 +18,7 @@ def listar():
 
 @sectores_bp.route("/nuevo", methods=["GET", "POST"])
 @login_required
-@admin_requerido
+@superadmin_requerido
 def nuevo():
     if request.method == "POST":
         nombre = request.form.get("nombre", "").strip()
@@ -45,7 +45,7 @@ def nuevo():
 
 @sectores_bp.route("/<int:sector_id>/editar", methods=["GET", "POST"])
 @login_required
-@admin_requerido
+@superadmin_requerido
 def editar(sector_id):
     sector = Sector.query.get_or_404(sector_id)
 
@@ -74,7 +74,7 @@ def editar(sector_id):
 
 @sectores_bp.route("/<int:sector_id>/eliminar", methods=["POST"])
 @login_required
-@admin_requerido
+@superadmin_requerido
 def eliminar(sector_id):
     sector = Sector.query.get_or_404(sector_id)
     nombre = sector.nombre

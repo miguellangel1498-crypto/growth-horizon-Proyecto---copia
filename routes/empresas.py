@@ -3,7 +3,7 @@ from flask_login import current_user, login_required
 
 from extensions import db
 from models import Empresa, HorarioAtencion, Producto, Sector, Venta
-from routes.decoradores import admin_requerido
+from routes.decoradores import superadmin_requerido
 from services.exporter import exportar_inventario, exportar_ventas
 
 empresas_bp = Blueprint("empresas", __name__, url_prefix="/empresas")
@@ -11,7 +11,7 @@ empresas_bp = Blueprint("empresas", __name__, url_prefix="/empresas")
 
 @empresas_bp.route("/")
 @login_required
-@admin_requerido
+@superadmin_requerido
 def listar():
     sector_id = request.args.get("sector", type=int)
     busqueda = request.args.get("q", "").strip()
@@ -44,7 +44,7 @@ def listar():
 
 @empresas_bp.route("/<int:empresa_id>")
 @login_required
-@admin_requerido
+@superadmin_requerido
 def detalle(empresa_id):
     empresa = Empresa.query.get_or_404(empresa_id)
     productos = Producto.query.filter_by(empresa_id=empresa.id).order_by(Producto.nombre.asc()).all()
@@ -73,7 +73,7 @@ def detalle(empresa_id):
 
 @empresas_bp.route("/exportar/ventas")
 @login_required
-@admin_requerido
+@superadmin_requerido
 def exportar_ventas_xlsx():
     ventas = Venta.query.order_by(Venta.fecha.desc()).all()
     filas = [
@@ -99,7 +99,7 @@ def exportar_ventas_xlsx():
 
 @empresas_bp.route("/exportar/inventario")
 @login_required
-@admin_requerido
+@superadmin_requerido
 def exportar_inventario_xlsx():
     productos = Producto.query.order_by(Producto.nombre.asc()).all()
     filas = []
@@ -129,7 +129,7 @@ def exportar_inventario_xlsx():
 
 @empresas_bp.route("/<int:empresa_id>/exportar/ventas")
 @login_required
-@admin_requerido
+@superadmin_requerido
 def exportar_ventas_empresa_xlsx(empresa_id):
     empresa = Empresa.query.get_or_404(empresa_id)
     ventas = Venta.query.filter_by(empresa_id=empresa.id).order_by(Venta.fecha.desc()).all()
@@ -156,7 +156,7 @@ def exportar_ventas_empresa_xlsx(empresa_id):
 
 @empresas_bp.route("/<int:empresa_id>/exportar/inventario")
 @login_required
-@admin_requerido
+@superadmin_requerido
 def exportar_inventario_empresa_xlsx(empresa_id):
     empresa = Empresa.query.get_or_404(empresa_id)
     productos = Producto.query.filter_by(empresa_id=empresa.id).order_by(Producto.nombre.asc()).all()
@@ -187,7 +187,7 @@ def exportar_inventario_empresa_xlsx(empresa_id):
 
 @empresas_bp.route("/nueva", methods=["GET", "POST"])
 @login_required
-@admin_requerido
+@superadmin_requerido
 def nueva():
     sectores = Sector.query.order_by(Sector.nombre.asc()).all()
 
@@ -232,7 +232,7 @@ def nueva():
 
 @empresas_bp.route("/<int:empresa_id>/editar", methods=["GET", "POST"])
 @login_required
-@admin_requerido
+@superadmin_requerido
 def editar(empresa_id):
     empresa = Empresa.query.get_or_404(empresa_id)
     sectores = Sector.query.order_by(Sector.nombre.asc()).all()
@@ -271,7 +271,7 @@ def editar(empresa_id):
 
 @empresas_bp.route("/<int:empresa_id>/eliminar", methods=["POST"])
 @login_required
-@admin_requerido
+@superadmin_requerido
 def eliminar(empresa_id):
     empresa = Empresa.query.get_or_404(empresa_id)
     nombre = empresa.nombre

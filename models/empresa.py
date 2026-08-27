@@ -15,6 +15,32 @@ class Empresa(TimestampMixin, db.Model):
     direccion = db.Column(db.String(255), nullable=True)
     sitio_web = db.Column(db.String(255), nullable=True)
     estado = db.Column(db.String(20), nullable=False, default="activo")
+    notas_admin = db.Column(db.Text, nullable=True)
+
+    @property
+    def esta_pendiente(self):
+        return self.estado == "pendiente"
+
+    @property
+    def esta_activa(self):
+        return self.estado == "activo"
+
+    @property
+    def esta_rechazada(self):
+        return self.estado == "rechazado"
+
+    @property
+    def esta_inactiva(self):
+        return self.estado == "inactivo"
+
+    @property
+    def etiqueta_estado(self):
+        return {
+            "pendiente": "Pendiente de aprobación",
+            "activo": "Activa",
+            "rechazado": "Rechazada",
+            "inactivo": "Inactiva",
+        }.get(self.estado, self.estado)
 
     def __repr__(self):
         return f"<Empresa {self.nombre}>"
