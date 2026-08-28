@@ -8,6 +8,9 @@
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="p-6 border-b border-slate-100">
             <form method="get" class="flex flex-col sm:flex-row gap-3">
+                <input type="text" name="q" value="{{ busqueda }}"
+                        placeholder="Buscar por texto, acción o entidad..."
+                        class="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none">
                 <select name="accion" class="px-3 py-2 rounded-lg border border-slate-300 text-sm focus:border-cyan-500 outline-none">
                     <option value="">Todas las acciones</option>
                     {% for a in acciones %}
@@ -15,10 +18,10 @@
                     {% endfor %}
                 </select>
                 <input type="text" name="usuario" value="{{ email }}"
-                       placeholder="Filtrar por correo de usuario..."
-                       class="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none">
+                        placeholder="Filtrar por correo de usuario..."
+                        class="flex-1 sm:max-w-xs px-3 py-2 rounded-lg border border-slate-300 text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none">
                 <button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 transition">Filtrar</button>
-                {% if accion or email %}
+                {% if accion or email or busqueda %}
                     <a href="{{ url_for('seguridad.auditoria') }}" class="px-4 py-2 rounded-lg border border-slate-300 text-sm font-medium hover:bg-slate-50 transition">Limpiar</a>
                 {% endif %}
             </form>
@@ -83,12 +86,12 @@
             </p>
             <div class="flex gap-2">
                 {% if registros.has_prev %}
-                    <a href="{{ url_for('seguridad.auditoria', page=registros.prev_num, accion=accion, usuario=email) }}"
-                       class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium hover:bg-slate-50 transition">&larr; Anterior</a>
+                    <a href="{{ url_for('seguridad.auditoria', page=registros.prev_num, accion=accion, usuario=email, q=busqueda) }}"
+                        class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium hover:bg-slate-50 transition">&larr; Anterior</a>
                 {% endif %}
                 {% if registros.has_next %}
-                    <a href="{{ url_for('seguridad.auditoria', page=registros.next_num, accion=accion, usuario=email) }}"
-                       class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium hover:bg-slate-50 transition">Siguiente &rarr;</a>
+                    <a href="{{ url_for('seguridad.auditoria', page=registros.next_num, accion=accion, usuario=email, q=busqueda) }}"
+                        class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium hover:bg-slate-50 transition">Siguiente &rarr;</a>
                 {% endif %}
             </div>
         </div>

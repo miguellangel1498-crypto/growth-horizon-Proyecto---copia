@@ -10,13 +10,36 @@
         {% for empresa in empresas %}
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
+                <div class="flex-1">
                     <h3 class="text-lg font-bold text-slate-900">{{ empresa.nombre }}</h3>
-                    <p class="text-sm text-slate-500 mt-1">
-                        RUC: {{ empresa.ruc or '—' }} · Sector: {{ empresa.sector.nombre if empresa.sector else '—' }}
-                    </p>
-                    <p class="text-sm text-slate-500">Actividad: {{ empresa.actividad or '—' }}</p>
-                    <p class="text-xs text-slate-400 mt-1">Registrada el {{ empresa.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                    <p class="text-xs text-slate-400 mt-0.5">Registrada el {{ empresa.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+
+                    <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div class="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5">
+                            <p class="text-[11px] uppercase tracking-wider text-slate-400">NIT / RUT</p>
+                            <p class="mt-0.5 text-sm font-semibold text-slate-800">{{ empresa.ruc or '—' }}</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5">
+                            <p class="text-[11px] uppercase tracking-wider text-slate-400">Sector</p>
+                            <p class="mt-0.5 text-sm font-semibold text-slate-800">{{ empresa.sector.nombre if empresa.sector else '—' }}</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5">
+                            <p class="text-[11px] uppercase tracking-wider text-slate-400">Actividad</p>
+                            <p class="mt-0.5 text-sm font-semibold text-slate-800">{{ empresa.actividad or '—' }}</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5">
+                            <p class="text-[11px] uppercase tracking-wider text-slate-400">Correo</p>
+                            <p class="mt-0.5 text-sm font-semibold text-slate-800">{{ empresa.correo or '—' }}</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5">
+                            <p class="text-[11px] uppercase tracking-wider text-slate-400">Teléfono</p>
+                            <p class="mt-0.5 text-sm font-semibold text-slate-800">{{ empresa.telefono or '—' }}</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5">
+                            <p class="text-[11px] uppercase tracking-wider text-slate-400">Dirección</p>
+                            <p class="mt-0.5 text-sm font-semibold text-slate-800">{{ empresa.direccion or '—' }}</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <a href="{{ url_for('superadmin.detalle_empresa', empresa_id=empresa.id) }}"

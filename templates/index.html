@@ -57,6 +57,7 @@
                 <a href="#beneficios" class="transition hover:text-white">Beneficios</a>
                 <a href="#sectores" class="transition hover:text-white">Sectores</a>
                 <a href="#analisis" class="transition hover:text-white">Análisis</a>
+                <a href="#simulador" class="transition hover:text-white">Simulador</a>
                 <a href="#contacto" class="transition hover:text-white">Contacto</a>
             </div>
 
@@ -90,7 +91,7 @@
                 <span
                     class="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-800/60 px-4 py-1.5 text-xs font-medium text-cyan-300">
                     <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-                    Plataforma de análisis y segmentación empresarial
+                    Plataforma para gestionar y analizar tu empresa
                 </span>
                 <h1 class="mt-6 text-5xl font-black leading-tight tracking-tight text-white md:text-6xl">
                     Convierte los datos de tu empresa en
@@ -98,9 +99,9 @@
                         de crecimiento</span>
                 </h1>
                 <p class="mx-auto mt-6 max-w-2xl text-lg text-slate-400">
-                    Clasifica tu negocio por sector económico, registra tus productos, horarios y ventas, y obtén
-                    análisis profundos con métricas clave: los productos más vendidos y los horarios de mayor
-                    movimiento.
+                    Agrupa tu negocio por tipo de industria, anota tus productos, horarios y ventas, y obtén
+                    reportes claros con la información más importante: qué productos se venden más y en qué horarios
+                    hay más clientes.
                 </p>
                 <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
                     <a href="{{ url_for('auth.registro') }}"
@@ -128,7 +129,7 @@
                 </div>
                 <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 text-center">
                     <p class="text-2xl font-black text-white">24/7</p>
-                    <p class="mt-1 text-xs text-slate-500">Trazabilidad completa</p>
+                    <p class="mt-1 text-xs text-slate-500">Registro y control total</p>
                 </div>
                 <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 text-center">
                     <p class="text-2xl font-black text-white">Excel</p>
@@ -153,18 +154,18 @@
                     <div
                         class="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/15 text-2xl text-cyan-300">
                         📊</div>
-                    <h3 class="mt-5 text-lg font-bold text-white">Análisis profundo</h3>
-                    <p class="mt-2 text-sm text-slate-400">Visualiza los productos más vendidos y el comportamiento de
-                        tus ventas por horario con gráficos estadísticos en tiempo real.</p>
+                    <h3 class="mt-5 text-lg font-bold text-white">Análisis claro</h3>
+                    <p class="mt-2 text-sm text-slate-400">Ve los productos que más se venden y cómo van tus ventas por
+                        horario con gráficos sencillos y actualizados.</p>
                 </div>
                 <div
                     class="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 transition hover:border-emerald-500/40">
                     <div
                         class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/15 text-2xl text-emerald-300">
                         🗂️</div>
-                    <h3 class="mt-5 text-lg font-bold text-white">Segmentación por sectores</h3>
-                    <p class="mt-2 text-sm text-slate-400">Clasifica y filtra tu ecosistema por sectores económicos para
-                        una visión ordenada y accionable del mercado.</p>
+                    <h3 class="mt-5 text-lg font-bold text-white">Organización por sectores</h3>
+                    <p class="mt-2 text-sm text-slate-400">Agrupa tus negocios por tipo de industria para tener una vista
+                        clara y útil del mercado.</p>
                 </div>
                 <div
                     class="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 transition hover:border-amber-500/40">
@@ -172,8 +173,8 @@
                         class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/15 text-2xl text-amber-300">
                         🛡️</div>
                     <h3 class="mt-5 text-lg font-bold text-white">Auditoría y seguridad</h3>
-                    <p class="mt-2 text-sm text-slate-400">Cada acceso y modificación queda registrado con usuario, IP y
-                        marca temporal exacta. Acceso aislado por empresa.</p>
+                    <p class="mt-2 text-sm text-slate-400">Cada entrada y cambio queda guardado con tu usuario, fecha y
+                        hora exactas. Cada empresa ve solo su propia información.</p>
                 </div>
             </div>
 
@@ -185,7 +186,7 @@
                         📦</div>
                     <h3 class="mt-5 text-lg font-bold text-white">Gestión de productos</h3>
                     <p class="mt-2 text-sm text-slate-400">Registra tu catálogo con precios y categorías, y controla el
-                        desempeño comercial de cada ítem.</p>
+                        desempeño de cada producto.</p>
                 </div>
                 <div
                     class="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 transition hover:border-emerald-500/40">
@@ -202,8 +203,8 @@
                         class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/15 text-2xl text-amber-300">
                         🕐</div>
                     <h3 class="mt-5 text-lg font-bold text-white">Horarios inteligentes</h3>
-                    <p class="mt-2 text-sm text-slate-400">Define tus horarios de atención y cruza esa información con
-                        tus ventas para detectar picos de demanda.</p>
+                    <p class="mt-2 text-sm text-slate-400">Define tus horarios de atención y junta esa información con
+                        tus ventas para ver los días y horas con más clientes.</p>
                 </div>
             </div>
         </div>
@@ -244,39 +245,37 @@
     <section id="analisis" class="border-t border-slate-800/60 bg-slate-900/30 py-24">
         <div class="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2">
             <div>
-                <span class="text-xs font-semibold uppercase tracking-widest text-cyan-400">Analítica empresarial</span>
+                <span class="text-xs font-semibold uppercase tracking-widest text-cyan-400">Análisis de tu empresa</span>
                 <h2 class="mt-4 text-3xl font-black text-white md:text-4xl">Toma decisiones con datos reales, no con
-                    intuición</h2>
+                    suposiciones</h2>
                 <p class="mt-5 text-slate-400">
-                    Nuestra ruta de análisis profundo <code
-                        class="rounded bg-slate-800 px-2 py-0.5 text-cyan-300">/analisis</code>
-                    procesa tus ventas para revelar ingresos totales, ticket promedio, productos más vendidos y los
-                    horarios
-                    con mayor movimiento del negocio.
+                    Con la sección de Análisis podrás ver tus ventas y conocer cuánto dinero entra, el valor promedio
+                    de cada venta, qué productos se venden más y en qué horarios hay más clientes.
                 </p>
 
                 <ul class="mt-8 space-y-4">
                     <li class="flex items-start gap-3">
                         <span
                             class="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">✓</span>
-                        <span class="text-sm text-slate-300">Ingresos, unidades vendidas y ticket promedio al
-                            alcance</span>
+                        <span class="text-sm text-slate-300">Cuánto dinero entra, cuánto vendes y el valor promedio de
+                            cada venta</span>
                     </li>
                     <li class="flex items-start gap-3">
                         <span
                             class="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">✓</span>
-                        <span class="text-sm text-slate-300">Ranking de productos por unidades e ingresos</span>
+                        <span class="text-sm text-slate-300">Los productos que más se venden, por cantidad y por
+                            dinero</span>
                     </li>
                     <li class="flex items-start gap-3">
                         <span
                             class="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">✓</span>
-                        <span class="text-sm text-slate-300">Horas y días con mayor movimiento para optimizar
+                        <span class="text-sm text-slate-300">Los días y horas con más clientes, para organizar mejor tus
                             turnos</span>
                     </li>
                     <li class="flex items-start gap-3">
                         <span
                             class="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">✓</span>
-                        <span class="text-sm text-slate-300">Gráficos estadísticos con Chart.js</span>
+                        <span class="text-sm text-slate-300">Gráficos claros y fáciles de leer</span>
                     </li>
                 </ul>
 
@@ -321,12 +320,116 @@
                         <div class="flex-1 rounded-t bg-amber-500/60" style="height:60%"></div>
                         <div class="flex-1 rounded-t bg-amber-500/40" style="height:35%"></div>
                     </div>
-                    <p class="mt-2 text-xs text-slate-500">08:00 &ndash; 13:00 &middot; pico de actividad detectado a
+                    <p class="mt-2 text-xs text-slate-500">08:00 &ndash; 13:00 &middot; momento de más clientes, a
                         las 10:00</p>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- ===== Simulador de ganancias (COP) ===== -->
+    <section id="simulador" class="border-t border-slate-800/60 bg-slate-900/30 py-24">
+        <div class="mx-auto max-w-5xl px-6">
+            <div class="mx-auto max-w-2xl text-center">
+                <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400">Calculadora sencilla</span>
+                <h2 class="mt-4 text-3xl font-black text-white md:text-4xl">¿Cuánto podrías ganar con tu negocio?</h2>
+                <p class="mt-4 text-slate-400">Mueve las barras de abajo según tu negocio y descubre, paso a paso,
+                    cuánto dinero podrías ganar al mes. No necesitas saber de matemáticas ni de computadores.</p>
+            </div>
+
+            <!-- Recuadro de ayuda -->
+            <div class="mx-auto mt-8 max-w-2xl rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-4 text-center">
+                <p class="text-sm text-emerald-200">👉 <span class="font-semibold text-emerald-100">Mueve las barras</span>
+                    según tu negocio y calcula cuánto podrías ganar al mes. Los resultados se actualizan solos.</p>
+            </div>
+
+            <div class="mt-10 grid gap-6 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 md:grid-cols-2 md:p-8">
+                <!-- Controles -->
+                <div class="space-y-7">
+                    <div>
+                        <div class="flex items-center justify-between text-sm">
+                            <label for="sim-ventas" class="font-medium text-slate-200">Cantidad de ventas al mes</label>
+                            <span id="sim-ventas-val" class="font-semibold text-emerald-400">500</span>
+                        </div>
+                        <input id="sim-ventas" type="range" min="0" max="2000" step="10" value="500"
+                            class="mt-3 w-full accent-emerald-500">
+                        <p class="mt-1.5 text-xs text-slate-500">¿Cuántas ventas haces en un mes? Por ejemplo: 100
+                            clientes que te compran algo.</p>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between text-sm">
+                            <label for="sim-ticket" class="font-medium text-slate-200">Valor promedio de cada venta (en pesos)</label>
+                            <span id="sim-ticket-val" class="font-semibold text-emerald-400">$35.000</span>
+                        </div>
+                        <input id="sim-ticket" type="range" min="1000" max="500000" step="1000" value="35000"
+                            class="mt-3 w-full accent-emerald-500">
+                        <p class="mt-1.5 text-xs text-slate-500">Cuánto dinero dejas en una venta normal. Por ejemplo:
+                            $35.000 por cada cliente.</p>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between text-sm">
+                            <label for="sim-margen" class="font-medium text-slate-200">Lo que te queda de ganancia (%)</label>
+                            <span id="sim-margen-val" class="font-semibold text-emerald-400">30%</span>
+                        </div>
+                        <input id="sim-margen" type="range" min="0" max="100" step="1" value="30"
+                            class="mt-3 w-full accent-emerald-500">
+                        <p class="mt-1.5 text-xs text-slate-500">De cada venta, qué porcentaje es tu ganancia real
+                            después de pagar lo que te cuesta el producto.</p>
+                    </div>
+                </div>
+
+                <!-- Resultados -->
+                <div class="flex flex-col justify-center gap-4 rounded-2xl border border-slate-800 bg-slate-950/60 p-6">
+                    <div class="rounded-xl bg-slate-900/80 p-4">
+                        <p class="text-xs uppercase tracking-wider text-slate-500">Dinero que entra al mes</p>
+                        <p id="sim-ingresos" class="mt-1 text-2xl font-black text-white">$17.500.000</p>
+                    </div>
+                    <div class="rounded-xl bg-gradient-to-r from-cyan-500/15 to-emerald-500/15 p-4">
+                        <p class="text-xs uppercase tracking-wider text-emerald-300">Lo que ganarías al mes</p>
+                        <p id="sim-ganancia" class="mt-1 text-3xl font-black text-emerald-400">$5.250.000</p>
+                    </div>
+                    <div class="rounded-xl bg-slate-900/80 p-4">
+                        <p class="text-xs uppercase tracking-wider text-slate-500">En un año (aproximado)</p>
+                        <p id="sim-anual" class="mt-1 text-lg font-bold text-slate-200">$63.000.000</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        (function () {
+            var fmt = new Intl.NumberFormat('es-CO', {
+                style: 'currency', currency: 'COP', maximumFractionDigits: 0
+            });
+            var ventas = document.getElementById('sim-ventas');
+            var ticket = document.getElementById('sim-ticket');
+            var margen = document.getElementById('sim-margen');
+
+            function recalcular() {
+                var n = parseInt(ventas.value, 10);
+                var t = parseInt(ticket.value, 10);
+                var m = parseInt(margen.value, 10);
+
+                var ingresos = n * t;
+                var ganancia = Math.round(ingresos * (m / 100));
+
+                document.getElementById('sim-ventas-val').textContent = n.toLocaleString('es-CO');
+                document.getElementById('sim-ticket-val').textContent = fmt.format(t);
+                document.getElementById('sim-margen-val').textContent = m + '%';
+                document.getElementById('sim-ingresos').textContent = fmt.format(ingresos);
+                document.getElementById('sim-ganancia').textContent = fmt.format(ganancia);
+                document.getElementById('sim-anual').textContent = fmt.format(ganancia * 12);
+            }
+
+            [ventas, ticket, margen].forEach(function (el) {
+                el.addEventListener('input', recalcular);
+            });
+            recalcular();
+        })();
+    </script>
 
     <!-- ===== CTA final ===== -->
     <section class="border-t border-slate-800/60 py-20">
@@ -360,8 +463,8 @@
                         <span class="text-lg font-bold text-white">Growth Horizon</span>
                     </div>
                     <p class="mt-4 max-w-sm text-sm text-slate-400">
-                        Plataforma de inteligencia empresarial que centraliza productos, horarios y ventas
-                        para ofrecer análisis accionable a empresas de diversos sectores económicos.
+                        Plataforma que reúne tus productos, horarios y ventas en un solo lugar para ayudarte a
+                        entender tu negocio y tomar mejores decisiones.
                     </p>
                     <div class="mt-5 flex gap-3">
                         <a href="#" aria-label="LinkedIn"
