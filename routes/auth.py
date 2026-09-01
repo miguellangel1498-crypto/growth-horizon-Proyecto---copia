@@ -1,12 +1,12 @@
 from datetime import datetime
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_user, logout_user
 
 from extensions import db
 from models import Empresa, Sector, Usuario
 from models.roles import ROL_ANALISTA, ROL_EMPRESA, ROL_SUPERADMIN, ESTADO_EMPRESA_PENDIENTE
-from services.auditoria import registrar_login, registrar_y_commit
+from services.auditoria import registrar_login, registrar_login_fallido, registrar_alerta_superadmin, registrar_y_commit
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -24,12 +24,19 @@ def login():
         usuario = Usuario.query.filter(db.func.lower(Usuario.email) == email).first()
 
         if usuario is None:
-            registrar_login(Usuario(email=email, rol="anonimo"), exitoso=False, motivo="Email no registrado")
             flash("Credenciales inválidas.", "error")
             return render_template("auth/login.html"), 401
 
         if not usuario.check_password(password):
-            registrar_login(usuario, exitoso=False, motivo="Contraseña incorrecta")
+            intentos = usuario.incrementar_intentos_fallidos()
+            if usuario.es_superadmin and intentos > 3:
+                registro = registrar_alerta_superadmin(usuario, motivo="Contraseña incorrecta")
+                db.session.add(registro)
+            elif intentos > 3:
+                registro = registrar_login_fallido(usuario, motivo="Contraseña incorrecta")
+                if registro:
+                    db.session.add(registro)
+            db.session.commit()
             flash("Credenciales inválidas.", "error")
             return render_template("auth/login.html"), 401
 
@@ -49,7 +56,9 @@ def login():
             return render_template("auth/login.html"), 403
 
         login_user(usuario, remember=recuerdame)
+        session.permanent = True
         usuario.ultimo_acceso = datetime.utcnow()
+        usuario.resetear_intentos_fallidos()
         db.session.commit()
         registrar_y_commit("LOGIN_EXITOSO", entidad="Usuario", entidad_id=usuario.id,
                            detalle=f"Ingreso de {usuario.email}")
@@ -167,6 +176,7 @@ def registro():
             )
 
             login_user(usuario)
+            session.permanent = True
             usuario.ultimo_acceso = datetime.utcnow()
             db.session.commit()
 
@@ -191,6 +201,7 @@ def registro():
         )
 
         login_user(usuario)
+        session.permanent = True
         usuario.ultimo_acceso = datetime.utcnow()
         db.session.commit()
 
@@ -218,5 +229,9 @@ def logout():
         registrar_y_commit("LOGOUT", entidad="Usuario", entidad_id=current_user.id,
                            detalle=f"Cierre de sesión de {current_user.email}")
     logout_user()
+    session.clear()
+    respuesta = redirect(url_for("main.index"))
+    respuesta.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    respuesta.headers["Pragma"] = "no-cache"
     flash("Has cerrado sesión correctamente.", "info")
-    return redirect(url_for("main.index"))
+    return respuesta

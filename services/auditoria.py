@@ -64,6 +64,37 @@ def registrar_login(usuario, exitoso=True, motivo=None):
     )
 
 
+def registrar_login_fallido(usuario, motivo=None):
+    intentos = usuario.intentos_fallidos
+    if intentos <= 3:
+        return None
+    detalle = f"Acceso de {usuario.email} ({usuario.rol}) - {intentos} intentos fallidos"
+    if motivo:
+        detalle = f"{detalle} - {motivo}"
+    return registrar(
+        accion="LOGIN_FALLIDO",
+        entidad="Usuario",
+        entidad_id=usuario.id,
+        detalle=detalle,
+    )
+
+
+def registrar_alerta_superadmin(usuario, motivo=None):
+    detalle = f"ALERTA CRITICA: Intento de acceso fallido a cuenta superadmin ({usuario.email})"
+    if motivo:
+        detalle = f"{detalle} - {motivo}"
+    ctx = _contexto_request()
+    return Auditoria(
+        usuario_id=usuario.id,
+        accion="ALERTA_SUPERADMIN",
+        entidad="Usuario",
+        entidad_id=usuario.id,
+        detalle=detalle,
+        ip_address=ctx["ip"],
+        user_agent=ctx["ua"],
+    )
+
+
 class AutoAuditoria:
     MODELOS_VIGILADOS = (Empresa, Sector)
 

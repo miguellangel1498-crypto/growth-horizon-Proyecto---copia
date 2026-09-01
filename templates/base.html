@@ -131,6 +131,10 @@
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint.startswith('cliente.empleados') %}bg-slate-800 text-white{% endif %}">
                         <span class="text-lg">👥</span> Empleados
                     </a>
+                    <a href="{{ url_for('cliente.seguridad') }}"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint == 'cliente.seguridad' %}bg-slate-800 text-white{% endif %}">
+                        <span class="text-lg">🔒</span> Seguridad
+                    </a>
                     <a href="{{ url_for('analisis.principal') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint == 'analisis.principal' %}bg-slate-800 text-white{% endif %}">
                         <span class="text-lg">📈</span> Análisis

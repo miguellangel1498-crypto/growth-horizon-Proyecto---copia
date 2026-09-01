@@ -15,7 +15,16 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "growth-horizon-dev-secret")
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "sqlite:///" + _default_db_path())
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    REMEMBER_COOKIE_DURATION = timedelta(days=7)
+
+    # ── Sesiones ──────────────────────────────────────────────
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_NAME = "gh_session"
+
+    # ── Cookie "Recuérdame" ───────────────────────────────────
+    REMEMBER_COOKIE_DURATION = timedelta(days=7)
+    REMEMBER_COOKIE_HTTPONLY = True
+    REMEMBER_COOKIE_SAMESITE = "Lax"
+
     WTF_CSRF_ENABLED = True

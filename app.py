@@ -14,6 +14,10 @@ def _migrar_esquema():
         columnas_usuario = [c["name"] for c in insp.get_columns("usuarios")]
         if "cargo" not in columnas_usuario:
             db.session.execute(text("ALTER TABLE usuarios ADD COLUMN cargo VARCHAR(80)"))
+        if "intentos_fallidos" not in columnas_usuario:
+            db.session.execute(text("ALTER TABLE usuarios ADD COLUMN intentos_fallidos INTEGER NOT NULL DEFAULT 0"))
+        if "ultimo_intento_fallido" not in columnas_usuario:
+            db.session.execute(text("ALTER TABLE usuarios ADD COLUMN ultimo_intento_fallido DATETIME"))
         db.session.execute(text("UPDATE usuarios SET rol='superadmin' WHERE rol='admin'"))
         db.session.execute(text("UPDATE usuarios SET rol='empresa' WHERE rol='cliente'"))
 
@@ -87,6 +91,17 @@ def crear_app(config_class=Config):
     app.register_blueprint(cliente_bp)
     app.register_blueprint(analisis_bp)
     app.register_blueprint(superadmin_bp)
+
+    # ── Headers anti-caché para rutas protegidas ──────────────
+    @app.after_request
+    def _no_cache_protected(response):
+        from flask_login import current_user
+
+        if current_user.is_authenticated:
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
 
     AutoAuditoria.configurar()
 

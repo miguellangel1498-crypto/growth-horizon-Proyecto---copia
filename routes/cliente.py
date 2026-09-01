@@ -4,7 +4,7 @@ from flask import Blueprint, abort, flash, redirect, render_template, request, s
 from flask_login import current_user, login_required
 
 from extensions import db
-from models import DIAS_SEMANA, HorarioAtencion, Producto, Usuario, Venta
+from models import DIAS_SEMANA, Auditoria, HorarioAtencion, Producto, Usuario, Venta
 from models.roles import ROL_EMPLEADO, ROL_EMPRESA
 from routes.decoradores import admin_empresa_requerido, requiere_empresa
 from services.exporter import exportar_inventario, exportar_ventas
@@ -428,3 +428,44 @@ def empleados_eliminar(empleado_id):
     db.session.commit()
     flash(f"Empleado '{nombre}' eliminado.", "info")
     return redirect(url_for("cliente.empleados_listar"))
+
+
+@cliente_bp.route("/seguridad")
+@login_required
+@admin_empresa_requerido
+def seguridad():
+    empresa_id = _espectiva_empresa()
+    pagina = request.args.get("page", 1, type=int)
+
+    empleado_ids = [u.id for u in Usuario.query.filter_by(empresa_id=empresa_id, rol=ROL_EMPLEADO).all()]
+    admin_ids = [u.id for u in Usuario.query.filter_by(empresa_id=empresa_id, rol=ROL_EMPRESA).all()]
+    todos_ids = empleado_ids + admin_ids
+
+    consulta = Auditoria.query.filter(
+        Auditoria.usuario_id.in_(todos_ids),
+        Auditoria.accion.in_(["LOGIN_FALLIDO", "LOGIN_EXITOSO", "ALERTA_SUPERADMIN"]),
+    )
+
+    registros = consulta.order_by(Auditoria.created_at.desc()).paginate(
+        page=pagina, per_page=20, error_out=False
+    )
+
+    empleados_con_fallos = (
+        db.session.query(Usuario, db.func.count(Auditoria.id).label("total_fallos"))
+        .join(Auditoria, Auditoria.usuario_id == Usuario.id)
+        .filter(
+            Usuario.empresa_id == empresa_id,
+            Usuario.rol == ROL_EMPLEADO,
+            Auditoria.accion == "LOGIN_FALLIDO",
+        )
+        .group_by(Usuario.id)
+        .having(db.func.count(Auditoria.id) > 0)
+        .order_by(db.desc("total_fallos"))
+        .all()
+    )
+
+    return render_template(
+        "cliente/seguridad.html",
+        registros=registros,
+        empleados_con_fallos=empleados_con_fallos,
+    )

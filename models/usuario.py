@@ -24,6 +24,8 @@ class Usuario(UserMixin, TimestampMixin, db.Model):
     sector_id = db.Column(db.Integer, db.ForeignKey("sectores.id"), nullable=True)
     empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id", ondelete="SET NULL"), nullable=True)
     ultimo_acceso = db.Column(db.DateTime, nullable=True)
+    intentos_fallidos = db.Column(db.Integer, nullable=False, default=0)
+    ultimo_intento_fallido = db.Column(db.DateTime, nullable=True)
 
     sector = db.relationship("Sector", backref=db.backref("usuarios", lazy="dynamic", passive_deletes=True))
     empresa = db.relationship("Empresa", backref=db.backref("usuarios", lazy="dynamic", passive_deletes=True))
@@ -38,6 +40,17 @@ class Usuario(UserMixin, TimestampMixin, db.Model):
         from extensions import bcrypt
 
         return bcrypt.check_password_hash(self.password_hash, password)
+
+    def incrementar_intentos_fallidos(self):
+        from datetime import datetime
+
+        self.intentos_fallidos += 1
+        self.ultimo_intento_fallido = datetime.utcnow()
+        return self.intentos_fallidos
+
+    def resetear_intentos_fallidos(self):
+        self.intentos_fallidos = 0
+        self.ultimo_intento_fallido = None
 
     @property
     def es_superadmin(self):
