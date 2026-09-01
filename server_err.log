@@ -426,3 +426,9 @@ werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'index'
 127.0.0.1 - - [01/Sep/2026 16:18:27] "GET /superadmin/permisos HTTP/1.1" 200 -
 127.0.0.1 - - [01/Sep/2026 16:18:55] "GET /auth/salir HTTP/1.1" 302 -
 127.0.0.1 - - [01/Sep/2026 16:18:56] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [01/Sep/2026 16:23:48] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [01/Sep/2026 16:24:09] "GET /auth/login HTTP/1.1" 200 -
+127.0.0.1 - - [01/Sep/2026 16:24:11] "POST /auth/login HTTP/1.1" 302 -
+127.0.0.1 - - [01/Sep/2026 16:24:11] "GET /dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [01/Sep/2026 16:24:12] "GET /superadmin/ HTTP/1.1" 200 -
+127.0.0.1 - - [01/Sep/2026 16:24:13] "GET /superadmin/empresas HTTP/1.1" 200 -
