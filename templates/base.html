@@ -46,6 +46,115 @@
         .scrollbar-thin::-webkit-scrollbar-track {
             background: transparent;
         }
+
+        /* ── Sidebar Uiverse.io style ── */
+        .gh-sidebar {
+            background-color: #0D1117;
+        }
+
+        .gh-sidebar .gh-nav-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #8b949e;
+            background-color: transparent;
+            cursor: pointer;
+            transition: background-color 300ms ease, color 200ms ease, filter 300ms ease, transform 300ms ease;
+        }
+
+        .gh-sidebar .gh-nav-item:hover {
+            background-color: #21262C;
+            color: #e6edf3;
+        }
+
+        .gh-sidebar .gh-nav-item:active,
+        .gh-sidebar .gh-nav-item.gh-active {
+            background-color: #1A1F24;
+            color: #e6edf3;
+            outline: none;
+        }
+
+        /* Barra indicadora azul a la izquierda */
+        .gh-sidebar .gh-nav-item::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: -12px;
+            width: 4px;
+            height: 0;
+            background-color: #2F81F7;
+            border-radius: 4px;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: height 250ms cubic-bezier(0.25, 0.8, 0.25, 1), opacity 250ms ease;
+        }
+
+        .gh-sidebar .gh-nav-item:hover::before {
+            height: 50%;
+            opacity: 0.4;
+        }
+
+        .gh-sidebar .gh-nav-item:active::before,
+        .gh-sidebar .gh-nav-item.gh-active::before {
+            height: 60%;
+            opacity: 1;
+        }
+
+        /* Efecto blur en hermanos al hacer hover */
+        .gh-sidebar nav:hover > .gh-nav-item:not(:hover) {
+            filter: blur(0.8px);
+            transform: scale(0.98);
+            opacity: 0.6;
+        }
+
+        .gh-sidebar nav:hover > .gh-nav-item:not(:hover) {
+            transition: filter 300ms ease, transform 300ms ease, opacity 300ms ease;
+        }
+
+        /* Reset al salir del hover del nav */
+        .gh-sidebar nav:not(:hover) > .gh-nav-item {
+            filter: none;
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* Separadores de sección */
+        .gh-sidebar .gh-section-label {
+            padding: 0.75rem 0.75rem 0.25rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #484f58;
+        }
+
+        .gh-sidebar .gh-divider {
+            height: 1px;
+            background-color: #21262C;
+            margin: 0.5rem 0.75rem;
+        }
+
+        /* Badge de notificación */
+        .gh-sidebar .gh-badge {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 9999px;
+            background-color: #f59e0b;
+            color: #fff;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        /* Footer del sidebar */
+        .gh-sidebar-footer {
+            border-top: 1px solid #21262C;
+            color: #484f58;
+        }
     </style>
 </head>
 
@@ -53,119 +162,117 @@
 
     <div class="flex h-screen overflow-hidden" x-data="{ empresaMenu: true }">
 
-        <aside class="w-72 flex-col bg-slate-900 text-slate-300 shrink-0" x-show="empresaMenu">
-            <div class="flex items-center gap-3 px-6 py-5 border-b border-slate-800">
+        <aside class="w-72 flex-col shrink-0 gh-sidebar" x-show="empresaMenu">
+            <div class="flex items-center gap-3 px-6 py-5 border-b" style="border-color: #21262C;">
                 <div
                     class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-500 flex items-center justify-center text-lg font-black text-slate-900">
                     GH</div>
                 <div>
                     <h1 class="text-white font-bold text-lg leading-tight">Growth Horizon</h1>
-                    <p class="text-xs text-slate-500">Plataforma empresarial</p>
+                    <p class="text-xs" style="color: #484f58;">Plataforma empresarial</p>
                 </div>
             </div>
 
             <nav class="flex-1 overflow-y-auto scrollbar-thin px-3 py-4 space-y-1">
                 <a href="{{ url_for('main.dashboard') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint == 'main.dashboard' %}bg-slate-800 text-white{% endif %}">
+                    class="gh-nav-item {% if request.endpoint == 'main.dashboard' %}gh-active{% endif %}">
                     <span class="text-lg">▦</span> Panel General
                 </a>
 
                 {% if current_user.is_authenticated and current_user.es_superadmin %}
-                <div class="pt-3 mt-2 border-t border-slate-800">
-                    <p class="px-3 pb-1 text-xs uppercase tracking-wider text-slate-500">Superadministrador</p>
-                    <a href="{{ url_for('superadmin.panel') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint.startswith('superadmin') %}bg-slate-800 text-white{% endif %}">
-                        <span class="text-lg">🛡️</span> Panel global
-                    </a>
-                    <a href="{{ url_for('superadmin.empresas') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint == 'superadmin.empresas' %}bg-slate-800 text-white{% endif %}">
-                        <span class="text-lg">🏢</span> Empresas
-                    </a>
-                    <a href="{{ url_for('superadmin.empresas_pendientes') }}"
-                        class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint == 'superadmin.empresas_pendientes' %}bg-slate-800 text-white{% endif %}">
-                        <span class="flex items-center gap-3"><span class="text-lg">⏳</span> Por aprobar</span>
-                        {% if empresas_pendientes %}
-                        <span class="text-xs bg-amber-500 text-white px-1.5 py-0.5 rounded-full">{{ empresas_pendientes }}</span>
-                        {% endif %}
-                    </a>
-                    <a href="{{ url_for('superadmin.permisos') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint == 'superadmin.permisos' %}bg-slate-800 text-white{% endif %}">
-                        <span class="text-lg">🔐</span> Permisos globales
-                    </a>
-                    <a href="{{ url_for('sectores.listar') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint.startswith('sectores') %}bg-slate-800 text-white{% endif %}">
-                        <span class="text-lg">🗂️</span> Sectores
-                    </a>
-                    <a href="{{ url_for('seguridad.auditoria') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint.startswith('seguridad') %}bg-slate-800 text-white{% endif %}">
-                        <span class="text-lg">📜</span> Auditoría
-                    </a>
-                    <a href="{{ url_for('analisis.principal') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint == 'analisis.principal' %}bg-slate-800 text-white{% endif %}">
-                        <span class="text-lg">📈</span> Análisis global
-                    </a>
-                </div>
+                <div class="gh-divider"></div>
+                <p class="gh-section-label">Superadministrador</p>
+                <a href="{{ url_for('superadmin.panel') }}"
+                    class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('superadmin') %}gh-active{% endif %}">
+                    <span class="text-lg">🛡️</span> Panel global
+                </a>
+                <a href="{{ url_for('superadmin.empresas') }}"
+                    class="gh-nav-item {% if request.endpoint == 'superadmin.empresas' %}gh-active{% endif %}">
+                    <span class="text-lg">🏢</span> Empresas
+                </a>
+                <a href="{{ url_for('superadmin.empresas_pendientes') }}"
+                    class="gh-nav-item {% if request.endpoint == 'superadmin.empresas_pendientes' %}gh-active{% endif %}">
+                    <span class="flex items-center gap-3 flex-1"><span class="text-lg">⏳</span> Por aprobar</span>
+                    {% if empresas_pendientes %}
+                    <span class="gh-badge">{{ empresas_pendientes }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ url_for('superadmin.permisos') }}"
+                    class="gh-nav-item {% if request.endpoint == 'superadmin.permisos' %}gh-active{% endif %}">
+                    <span class="text-lg">🔐</span> Permisos globales
+                </a>
+                <a href="{{ url_for('sectores.listar') }}"
+                    class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('sectores') %}gh-active{% endif %}">
+                    <span class="text-lg">🗂️</span> Sectores
+                </a>
+                <a href="{{ url_for('seguridad.auditoria') }}"
+                    class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('seguridad') %}gh-active{% endif %}">
+                    <span class="text-lg">📜</span> Auditoría
+                </a>
+                <a href="{{ url_for('analisis.principal') }}"
+                    class="gh-nav-item {% if request.endpoint == 'analisis.principal' %}gh-active{% endif %}">
+                    <span class="text-lg">📈</span> Análisis global
+                </a>
                 {% endif %}
 
                 {% if current_user.is_authenticated and current_user.tiene_empresa and current_user.acceso_empresa_activa %}
-                <div class="pt-3 mt-3 border-t border-slate-800">
-                    <p class="px-3 pb-1 text-xs uppercase tracking-wider text-slate-500">Mi empresa</p>
-                    {% if current_user.empresa %}
-                    <a href="{{ url_for('cliente.panel') }}"
-                        class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint.startswith('cliente.panel') %}bg-slate-800 text-white{% endif %}">
-                        <span class="flex items-center gap-3"><span class="text-lg">📊</span> Panel</span>
-                    </a>
-                    <a href="{{ url_for('cliente.productos_listar') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint == 'cliente.productos_listar' %}bg-slate-800 text-white{% endif %}">
-                        <span class="text-lg">📦</span> {% if current_user.es_empleado %}Inventario{% else %}Productos{% endif %}
-                    </a>
-                    <a href="{{ url_for('cliente.horarios_listar') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint == 'cliente.horarios_listar' %}bg-slate-800 text-white{% endif %}">
-                        <span class="text-lg">🕐</span> Horarios
-                    </a>
-                    <a href="{{ url_for('cliente.ventas_listar') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint.startswith('cliente.ventas') %}bg-slate-800 text-white{% endif %}">
-                        <span class="text-lg">💰</span> Ventas
-                    </a>
-                    {% if current_user.puede_administrar %}
-                    <a href="{{ url_for('cliente.empleados_listar') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint.startswith('cliente.empleados') %}bg-slate-800 text-white{% endif %}">
-                        <span class="text-lg">👥</span> Empleados
-                    </a>
-                    <a href="{{ url_for('cliente.seguridad') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint and request.endpoint == 'cliente.seguridad' %}bg-slate-800 text-white{% endif %}">
-                        <span class="text-lg">🔒</span> Seguridad
-                    </a>
-                    <a href="{{ url_for('analisis.principal') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition {% if request.endpoint == 'analisis.principal' %}bg-slate-800 text-white{% endif %}">
-                        <span class="text-lg">📈</span> Análisis
-                    </a>
-                    {% endif %}
-                    {% endif %}
-                </div>
+                <div class="gh-divider"></div>
+                <p class="gh-section-label">Mi empresa</p>
+                {% if current_user.empresa %}
+                <a href="{{ url_for('cliente.panel') }}"
+                    class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('cliente.panel') %}gh-active{% endif %}">
+                    <span class="text-lg">📊</span> Panel
+                </a>
+                <a href="{{ url_for('cliente.productos_listar') }}"
+                    class="gh-nav-item {% if request.endpoint and request.endpoint == 'cliente.productos_listar' %}gh-active{% endif %}">
+                    <span class="text-lg">📦</span> {% if current_user.es_empleado %}Inventario{% else %}Productos{% endif %}
+                </a>
+                <a href="{{ url_for('cliente.horarios_listar') }}"
+                    class="gh-nav-item {% if request.endpoint and request.endpoint == 'cliente.horarios_listar' %}gh-active{% endif %}">
+                    <span class="text-lg">🕐</span> Horarios
+                </a>
+                <a href="{{ url_for('cliente.ventas_listar') }}"
+                    class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('cliente.ventas') %}gh-active{% endif %}">
+                    <span class="text-lg">💰</span> Ventas
+                </a>
+                {% if current_user.puede_administrar %}
+                <a href="{{ url_for('cliente.empleados_listar') }}"
+                    class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('cliente.empleados') %}gh-active{% endif %}">
+                    <span class="text-lg">👥</span> Empleados
+                </a>
+                <a href="{{ url_for('cliente.seguridad') }}"
+                    class="gh-nav-item {% if request.endpoint and request.endpoint == 'cliente.seguridad' %}gh-active{% endif %}">
+                    <span class="text-lg">🔒</span> Seguridad
+                </a>
+                <a href="{{ url_for('analisis.principal') }}"
+                    class="gh-nav-item {% if request.endpoint == 'analisis.principal' %}gh-active{% endif %}">
+                    <span class="text-lg">📈</span> Análisis
+                </a>
+                {% endif %}
+                {% endif %}
                 {% endif %}
             </nav>
 
-            <div class="px-6 py-4 border-t border-slate-800 text-xs text-slate-500">
+            <div class="gh-sidebar-footer px-6 py-4 text-xs">
                 GH Platform v1.0
             </div>
         </aside>
 
         <!-- Móvil: barra superior -->
         <div
-            class="md:hidden flex items-center justify-between bg-slate-900 text-white px-4 py-3 fixed top-0 inset-x-0 z-20">
+            class="md:hidden flex items-center justify-between text-white px-4 py-3 fixed top-0 inset-x-0 z-20" style="background-color: #0D1117;">
             <div class="flex items-center gap-2 font-bold">GH Growth Horizon</div>
             {% if current_user.is_authenticated %}
             <button @click="empresaMenu = !empresaMenu"
-                class="flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-1.5 text-sm text-slate-300 hover:bg-slate-700 transition">
+                class="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition" style="background-color: #161b22; color: #8b949e;">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
                 Menú
             </button>
-            <a href="{{ url_for('auth.logout') }}" class="text-sm text-slate-300">Salir</a>
+            <a href="{{ url_for('auth.logout') }}" class="text-sm" style="color: #8b949e;">Salir</a>
             {% else %}
-            <a href="{{ url_for('auth.login') }}" class="text-sm text-slate-300">Iniciar sesión</a>
+            <a href="{{ url_for('auth.login') }}" class="text-sm" style="color: #8b949e;">Iniciar sesión</a>
             {% endif %}
         </div>
 

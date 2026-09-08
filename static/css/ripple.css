@@ -1,38 +1,45 @@
 ﻿/* ============================================================
-   Micro-interacciones y Efecto Ripple al Clic
-   Growth Horizon - Ultra ligero, 60fps con transform y opacity
+   Ripple Effect - Growth Horizon
+   Onda expansiva sutil en elementos interactivos
    ============================================================ */
 
-/* Contenedor relativo y overflow para elementos con ripple */
+/* Contenedor: overflow hidden + relative para la onda */
 .gh-ripple-host {
     position: relative !important;
     overflow: hidden !important;
 }
 
-/* Elemento de onda expansiva (Ripple) */
+/* Onda expansiva */
 .gh-ripple-wave {
     position: absolute;
     border-radius: 50%;
     pointer-events: none;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 60%, rgba(255, 255, 255, 0) 100%);
+    background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.45) 0%,
+        rgba(255, 255, 255, 0.15) 55%,
+        rgba(255, 255, 255, 0) 100%
+    );
     transform: scale(0);
     opacity: 1;
-    animation: gh-ripple-anim 550ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: gh-ripple-expand 550ms cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
     will-change: transform, opacity;
 }
 
-/* Variante de onda para elementos con fondo claro */
+/* Variante para fondos claros: usa verde esmeralda semitransparente */
 .gh-ripple-wave.gh-ripple-dark {
-    background: radial-gradient(circle, rgba(14, 116, 144, 0.35) 0%, rgba(14, 116, 144, 0.12) 60%, rgba(14, 116, 144, 0) 100%);
+    background: radial-gradient(
+        circle,
+        rgba(16, 185, 129, 0.35) 0%,
+        rgba(16, 185, 129, 0.10) 55%,
+        rgba(16, 185, 129, 0) 100%
+    );
 }
 
-@keyframes gh-ripple-anim {
+@keyframes gh-ripple-expand {
     0% {
         transform: scale(0);
-        opacity: 0.85;
-    }
-    50% {
-        opacity: 0.5;
+        opacity: 0.9;
     }
     100% {
         transform: scale(2.5);
@@ -40,25 +47,9 @@
     }
 }
 
-/* Micro-feedback táctil / click scale sutil */
-button:active,
-a[role="button"]:active,
-.btn:active,
-aside nav a:active,
-.emp-btn-primary:active,
-.emp-btn-back:active,
-.interactive-click:active {
-    transform: scale(0.975);
-    transition: transform 90ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Transición suave al soltar el clic */
-button,
-a[role="button"],
-.btn,
-aside nav a,
-.emp-btn-primary,
-.emp-btn-back,
-.interactive-click {
-    transition: transform 180ms cubic-bezier(0.2, 0, 0, 1), background-color 150ms ease, box-shadow 150ms ease;
+/* Reducir movimiento si el usuario lo prefiere */
+@media (prefers-reduced-motion: reduce) {
+    .gh-ripple-wave {
+        animation-duration: 0.01ms !important;
+    }
 }
