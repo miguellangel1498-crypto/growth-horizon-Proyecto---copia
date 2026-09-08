@@ -2,197 +2,98 @@
 
 {% block title %}Mi empresa &middot; Growth Horizon{% endblock %}
 {% block cabecera %}Panel de {{ empresa.nombre }}{% endblock %}
-{% block subcabecera %}Gestiona tus productos, horarios de atención y registra tus ventas.{% endblock %}
+{% block subcabecera %}Diagnostica el nivel de madurez empresarial y digital de tu negocio.{% endblock %}
 
 {% block contenido %}
     <div class="space-y-6">
-        {% if es_nuevo %}
+        {% if puede_administrar %}
         <div class="rounded-2xl bg-gradient-to-br from-indigo-600 to-emerald-600 p-6 sm:p-8 text-white shadow-sm">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <p class="text-sm font-medium text-white/80">¡Bienvenido/a a Growth Horizon!</p>
-                    <h2 class="text-2xl sm:text-3xl font-black mt-1">Hola, {{ empresa.nombre }}</h2>
-                    <p class="text-white/90 mt-2 max-w-xl">Tu panel ya está listo. En sólo 3 pasos tendrás tu negocio
-                        configurado y empezarás a ver métricas y análisis en vivo.</p>
+                    <p class="text-sm font-medium text-white/80">Bienvenido a Growth Horizon</p>
+                    <h2 class="text-2xl sm:text-3xl font-black mt-1">{{ empresa.nombre }}</h2>
+                    <p class="text-white/90 mt-2 max-w-xl">Diagnostica el nivel de madurez empresarial y digital de tu negocio respondiendo un cuestionario por dimensiones.</p>
                 </div>
-                <a href="{{ url_for('cliente.ventas_nueva') if es_empleado else pasos[0]['url'] }}"
+                <a href="{{ url_for('diagnostico.responder') }}"
                    class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white text-indigo-700 font-semibold hover:bg-indigo-50 transition shrink-0">
-                    <span>🚀</span> {{ 'Registrar venta' if es_empleado else 'Empezar ahora' }}
+                    Responder diagnostico
                 </a>
             </div>
         </div>
         {% endif %}
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-cyan-100 text-cyan-700 flex items-center justify-center text-xl">📦</div>
-                <div>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">Productos</p>
-                    <p class="text-2xl font-black text-slate-900 dark:text-white">{{ total_productos }}</p>
-                </div>
-            </div>
-            <div class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl">🕐</div>
-                <div>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">Horarios</p>
-                    <p class="text-2xl font-black text-slate-900 dark:text-white">{{ total_horarios }}</p>
-                </div>
-            </div>
-            <div class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl">💰</div>
-                <div>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">Ventas registradas</p>
-                    <p class="text-2xl font-black text-slate-900 dark:text-white">{{ total_ventas_registradas }}</p>
-                </div>
-            </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {% if puede_administrar %}
+            <a href="{{ url_for('diagnostico.responder') }}" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-indigo-300 transition flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl">[D]</div>
+                <div>
+                    <p class="text-sm text-slate-500">Diagnostico</p>
+                    <p class="text-xl font-black text-slate-900">Responder</p>
+                </div>
+            </a>
+            <a href="{{ url_for('diagnostico.resultados') }}" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-emerald-300 transition flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl">[R]</div>
+                <div>
+                    <p class="text-sm text-slate-500">Resultados</p>
+                    <p class="text-xl font-black text-slate-900">Ver indice</p>
+                </div>
+            </a>
             <a href="{{ url_for('analisis.principal') }}" class="bg-gradient-to-br from-indigo-600 to-emerald-600 rounded-2xl p-6 hover:opacity-95 transition flex items-center justify-between text-white">
                 <div>
-                    <p class="text-sm text-white/70 font-medium">Analiza tu negocio</p>
-                    <p class="text-xl font-black">Ver análisis →</p>
+                    <p class="text-sm text-white/70 font-medium">Analisis</p>
+                    <p class="text-xl font-black">Ver analisis</p>
                 </div>
-                <span class="text-3xl">📈</span>
+                <span class="text-3xl">[A]</span>
             </a>
             {% endif %}
         </div>
 
-        <div class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6">
-            <h3 class="font-bold text-slate-900 dark:text-white mb-4">Datos de tu negocio</h3>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-bold text-slate-900 mb-4">Datos de tu negocio</h3>
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
                 <div>
-                    <dt class="text-slate-500 dark:text-slate-400">Actividad</dt>
-                    <dd class="font-medium text-slate-800 dark:text-slate-200">{{ empresa.actividad or '—' }}</dd>
+                    <dt class="text-slate-500">Actividad</dt>
+                    <dd class="font-medium text-slate-800">{{ empresa.actividad or '---' }}</dd>
                 </div>
                 <div>
-                    <dt class="text-slate-500 dark:text-slate-400">Teléfono</dt>
-                    <dd class="font-medium text-slate-800 dark:text-slate-200">{{ empresa.telefono or '—' }}</dd>
+                    <dt class="text-slate-500">Sector</dt>
+                    <dd class="font-medium text-slate-800">{{ empresa.sector.nombre if empresa.sector else '---' }}</dd>
                 </div>
                 <div>
-                    <dt class="text-slate-500 dark:text-slate-400">Correo</dt>
-                    <dd class="font-medium text-slate-800 dark:text-slate-200">{{ empresa.correo or '—' }}</dd>
+                    <dt class="text-slate-500">Tamano</dt>
+                    <dd class="font-medium text-slate-800">{{ empresa.etiqueta_tamano }}</dd>
                 </div>
                 <div>
-                    <dt class="text-slate-500 dark:text-slate-400">Sector</dt>
-                    <dd class="font-medium text-slate-800 dark:text-slate-200">{{ empresa.sector.nombre if empresa.sector else '—' }}</dd>
+                    <dt class="text-slate-500">Telefono</dt>
+                    <dd class="font-medium text-slate-800">{{ empresa.telefono or '---' }}</dd>
                 </div>
                 <div>
-                    <dt class="text-slate-500 dark:text-slate-400">Dirección</dt>
-                    <dd class="font-medium text-slate-800 dark:text-slate-200">{{ empresa.direccion or '—' }}</dd>
+                    <dt class="text-slate-500">Correo</dt>
+                    <dd class="font-medium text-slate-800">{{ empresa.correo or '---' }}</dd>
                 </div>
                 <div>
-                    <dt class="text-slate-500 dark:text-slate-400">Sitio web</dt>
-                    <dd class="font-medium text-slate-800 dark:text-slate-200">{{ empresa.sitio_web or '—' }}</dd>
+                    <dt class="text-slate-500">Direccion</dt>
+                    <dd class="font-medium text-slate-800">{{ empresa.direccion or '---' }}</dd>
                 </div>
             </dl>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h3 class="font-bold text-slate-900 dark:text-white">Primeros pasos</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">Completa estas tareas para activar tu panel.</p>
-                </div>
-                <span class="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{{ pasos_completados }}/{{ pasos | length }}</span>
-            </div>
-            <div class="h-2.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden mb-5">
-                <div class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all" style="width: {{ progreso }}%"></div>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {% for paso in pasos %}
-                {% if not (es_empleado and 'horario' in paso['titulo']|lower) %}
-                <a href="{{ paso['url'] }}" class="group flex items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-700 p-4 hover:border-indigo-300 dark:hover:border-indigo-500 transition">
-                    <span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shrink-0
-                        {{ 'bg-emerald-500 text-white' if paso['hecho'] else 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300' }}">
-                        {{ '✓' if paso['hecho'] else loop.index }}
-                    </span>
-                    <div>
-                        <p class="text-sm font-semibold text-slate-800 dark:text-white">{{ paso['titulo'] }}</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ paso['descripcion'] }}</p>
-                    </div>
-                </a>
-                {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
-                    <h3 class="font-bold text-slate-900 dark:text-white">Últimas ventas</h3>
-                    <a href="{{ url_for('cliente.ventas_listar') }}" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700">Ver todas →</a>
-                </div>
-                <ul class="divide-y divide-slate-100 dark:divide-slate-700">
-                    {% for venta in ventas %}
-                    <li class="px-6 py-3 flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ venta.producto.nombre if venta.producto else 'Producto' }}</p>
-                            <p class="text-xs text-slate-400">{{ venta.fecha.strftime('%d/%m/%Y %H:%M') }} · {{ venta.cantidad }} und.</p>
-                        </div>
-                        <span class="font-semibold text-emerald-600">{% if puede_ver_finanzas %}{{ venta.total | moneda }}{% else %}—{% endif %}</span>
-                    </li>
-                    {% else %}
-                    <li class="px-6 py-10 text-center">
-                        <p class="text-sm text-slate-400">Aún no registras ventas.</p>
-                        <a href="{{ url_for('cliente.ventas_nueva') }}" class="mt-2 inline-block text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700">Registrar primera venta →</a>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <div class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
-                    <h3 class="font-bold text-slate-900 dark:text-white">Horarios de atención</h3>
-                    <a href="{{ url_for('cliente.horarios_listar') }}" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700">Gestionar →</a>
-                </div>
-                <ul class="divide-y divide-slate-100 dark:divide-slate-700">
-                    {% for horario in horarios %}
-                    <li class="px-6 py-3 flex items-center justify-between">
-                        <span class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ horario.dia }}</span>
-                        <span class="text-sm text-slate-500 dark:text-slate-400">{{ horario.apertura }} - {{ horario.cierre }}</span>
-                    </li>
-                    {% else %}
-                    <li class="px-6 py-10 text-center">
-                        <p class="text-sm text-slate-400">Sin horarios configurados.</p>
-                        <a href="{{ url_for('cliente.horarios_nuevo') }}" class="mt-2 inline-block text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700">Configurar horario →</a>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <a href="{{ url_for('cliente.productos_listar') }}" class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-indigo-300 dark:hover:border-indigo-500 transition text-center">
-                <span class="text-3xl">📦</span>
-                <p class="mt-2 font-semibold text-slate-800 dark:text-white">{% if es_empleado %}Consultar inventario{% else %}Administrar productos{% endif %}</p>
-            </a>
-            {% if puede_administrar %}
-            <a href="{{ url_for('cliente.horarios_nuevo') }}" class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-indigo-300 dark:hover:border-indigo-500 transition text-center">
-                <span class="text-3xl">🕐</span>
-                <p class="mt-2 font-semibold text-slate-800 dark:text-white">Configurar horario</p>
-            </a>
-            {% endif %}
-            <a href="{{ url_for('cliente.ventas_nueva') }}" class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-indigo-300 dark:hover:border-indigo-500 transition text-center">
-                <span class="text-3xl">💰</span>
-                <p class="mt-2 font-semibold text-slate-800 dark:text-white">Registrar venta</p>
-            </a>
-        </div>
-
         {% if puede_administrar %}
-        <div class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h3 class="font-bold text-slate-900 dark:text-white">Reportes (Excel)</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">Descarga las ventas e inventario de tu empresa.</p>
+                    <h3 class="font-bold text-slate-900">Acciones rapidas</h3>
+                    <p class="text-sm text-slate-500">Gestiona los usuarios de tu empresa.</p>
                 </div>
             </div>
             <div class="flex flex-wrap gap-3">
-                <a href="{{ url_for('cliente.exportar_ventas_xlsx') }}"
-                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition">
-                    <span class="text-base">📥</span> Exportar ventas (Excel)
+                <a href="{{ url_for('cliente.empleados_listar') }}"
+                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition">
+                    Empleados ({{ total_empleados }})
                 </a>
-                <a href="{{ url_for('cliente.exportar_inventario_xlsx') }}"
-                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-indigo-700 text-white text-sm font-semibold hover:bg-indigo-800 transition">
-                    <span class="text-base">📥</span> Exportar inventario (Excel)
+                <a href="{{ url_for('cliente.seguridad') }}"
+                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-700 text-white text-sm font-semibold hover:bg-slate-800 transition">
+                    Seguridad
                 </a>
             </div>
         </div>

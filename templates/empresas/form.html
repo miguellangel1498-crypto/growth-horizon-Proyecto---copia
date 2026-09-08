@@ -47,6 +47,16 @@
                     </select>
                 </div>
                 <div>
+                    <label class="block text-sm font-medium mb-1.5 text-slate-700">Tamano de empresa</label>
+                    <select name="tamano_empresa"
+                            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none text-sm">
+                        <option value="MICRO" {% if empresa and empresa.tamano_empresa == 'MICRO' %}selected{% endif %}>Microempresa</option>
+                        <option value="PEQUENA" {% if not empresa or empresa.tamano_empresa == 'PEQUENA' %}selected{% endif %}>Pequena empresa</option>
+                        <option value="MEDIANA" {% if empresa and empresa.tamano_empresa == 'MEDIANA' %}selected{% endif %}>Mediana empresa</option>
+                        <option value="GRANDE" {% if empresa and empresa.tamano_empresa == 'GRANDE' %}selected{% endif %}>Gran empresa</option>
+                    </select>
+                </div>
+                <div>
                     <label class="block text-sm font-medium mb-1.5 text-slate-700">Correo</label>
                     <input type="email" name="correo" value="{{ empresa.correo if empresa and empresa.correo else '' }}"
                            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none text-sm"

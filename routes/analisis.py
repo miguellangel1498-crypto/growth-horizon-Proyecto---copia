@@ -2,23 +2,151 @@ from flask import Blueprint, abort, render_template
 from flask_login import current_user, login_required
 
 from extensions import db
-from models import HorarioAtencion, Producto, Venta
+from models import Dimension, Empresa, IndiceMadurez, Indicador, Recomendacion, RespuestaDiagnostico, Sector, Segmento
 from models.roles import ROL_EMPRESA, ROL_SUPERADMIN
 
 analisis_bp = Blueprint("analisis", __name__, url_prefix="/analisis")
 
 
-def _hora_label(hora):
-    try:
-        return f"{int(hora):02d}:00"
-    except (TypeError, ValueError):
-        return "-"
+def _calcular_indice_empresa(empresa_id):
+    respuestas = (
+        RespuestaDiagnostico.query
+        .filter_by(empresa_id=empresa_id)
+        .all()
+    )
+    if not respuestas:
+        return None, {}
+
+    indicador_ids = [r.indicador_id for r in respuestas]
+    indicadores = Indicador.query.filter(Indicador.id.in_(indicador_ids)).all()
+    ind_map = {i.id: i for i in indicadores}
+
+    dimensiones = Dimension.query.all()
+    dim_map = {d.id: d for d in dimensiones}
+
+    peso_total_global = 0
+    suma_ponderada_global = 0
+
+    dim_puntajes = {}
+
+    for resp in respuestas:
+        ind = ind_map.get(resp.indicador_id)
+        if ind is None:
+            continue
+        dim = dim_map.get(ind.dimension_id)
+        if dim is None:
+            continue
+
+        peso_ind = float(ind.peso or 1)
+        peso_dim = float(dim.peso or 1)
+
+        if dim.id not in dim_puntajes:
+            dim_puntajes[dim.id] = {
+                "nombre": dim.nombre,
+                "suma": 0,
+                "peso_total": 0,
+                "peso_dim": peso_dim,
+            }
+
+        dim_puntajes[dim.id]["suma"] += float(resp.valor) * peso_ind
+        dim_puntajes[dim.id]["peso_total"] += peso_ind
+
+    resultados_dim = {}
+    for dim_id, data in dim_puntajes.items():
+        if data["peso_total"] > 0:
+            puntaje_dim = data["suma"] / data["peso_total"]
+        else:
+            puntaje_dim = 0
+        resultados_dim[dim_id] = {
+            "nombre": data["nombre"],
+            "puntaje": round(puntaje_dim, 2),
+            "peso": data["peso_dim"],
+        }
+        suma_ponderada_global += puntaje_dim * data["peso_dim"]
+        peso_total_global += data["peso_dim"]
+
+    if peso_total_global > 0:
+        indice_general = round(suma_ponderada_global / peso_total_global, 2)
+    else:
+        indice_general = 0
+
+    return indice_general, resultados_dim
+
+
+def _obtener_segmento(puntaje):
+    segmento = (
+        Segmento.query
+        .filter(Segmento.rango_min <= puntaje, Segmento.rango_max >= puntaje)
+        .first()
+    )
+    return segmento
+
+
+def _obtener_recomendaciones(dimension_id, puntaje):
+    recs = (
+        Recomendacion.query
+        .filter(
+            Recomendacion.dimension_id == dimension_id,
+            Recomendacion.rango_min <= puntaje,
+            Recomendacion.rango_max >= puntaje,
+        )
+        .all()
+    )
+    return recs
+
+
+def _calcular_promedio_sector(sector_id, tamano_empresa):
+    empresas_sector = Empresa.query.filter(
+        Empresa.sector_id == sector_id,
+        Empresa.tamano_empresa == tamano_empresa,
+        Empresa.estado == "activo",
+    ).all()
+
+    if not empresas_sector:
+        return None
+
+    empresa_ids = [e.id for e in empresas_sector]
+    indices = (
+        IndiceMadurez.query
+        .filter(IndiceMadurez.empresa_id.in_(empresa_ids))
+        .all()
+    )
+
+    if not indices:
+        return None
+
+    from sqlalchemy import func
+
+    promedio = (
+        db.session.query(func.avg(IndiceMadurez.puntaje))
+        .filter(IndiceMadurez.empresa_id.in_(empresa_ids))
+        .scalar()
+    )
+    return round(float(promedio), 2) if promedio else None
+
+
+def _ranking_empresas():
+    from sqlalchemy import func
+
+    ranking = (
+        db.session.query(
+            Empresa.id,
+            Empresa.nombre,
+            Empresa.tamano_empresa,
+            func.avg(IndiceMadurez.puntaje).label("promedio"),
+        )
+        .join(IndiceMadurez, IndiceMadurez.empresa_id == Empresa.id)
+        .filter(Empresa.estado == "activo")
+        .group_by(Empresa.id, Empresa.nombre, Empresa.tamano_empresa)
+        .order_by(func.avg(IndiceMadurez.puntaje).desc())
+        .all()
+    )
+    return ranking
 
 
 @analisis_bp.route("/")
 @login_required
 def principal():
-    # Solo superadmin y admin empresa tienen acceso al análisis de negocio
     if current_user.rol not in (ROL_SUPERADMIN, ROL_EMPRESA):
         abort(403)
     if current_user.rol == ROL_EMPRESA and not current_user.activo:
@@ -28,119 +156,59 @@ def principal():
 
     empresa = current_user.empresa
     es_admin = current_user.rol == ROL_SUPERADMIN
-    empresa_id = None if es_admin else (empresa.id if empresa else None)
-
-    def cond_venta(*extra):
-        if es_admin:
-            return list(extra)
-        return [Venta.empresa_id == empresa_id, *extra]
-
-    def cond_producto(*extra):
-        if es_admin:
-            return list(extra)
-        return [Producto.empresa_id == empresa_id, *extra]
-
-    consulta_ventas = Venta.query.filter(*cond_venta())
-
-    total_ingresos = db.session.query(db.func.sum(Venta.precio_unitario * Venta.cantidad)).filter(*cond_venta()).scalar() or 0
-    total_unidades = db.session.query(db.func.sum(Venta.cantidad)).filter(*cond_venta()).scalar() or 0
-    total_ventas = consulta_ventas.count()
-    ticket_promedio = (total_ingresos / total_ventas) if total_ventas else 0
-    productos_registrados = Producto.query.filter(*cond_producto()).count()
-
-    productos_mas_vendidos = (
-        db.session.query(
-            Producto.nombre,
-            Producto.categoria,
-            db.func.sum(Venta.cantidad).label("unidades"),
-            db.func.sum(Venta.precio_unitario * Venta.cantidad).label("ingresos"),
-        )
-        .join(Venta, Venta.producto_id == Producto.id)
-        .filter(*cond_venta())
-        .group_by(Producto.id, Producto.nombre, Producto.categoria)
-        .order_by(db.func.sum(Venta.cantidad).desc())
-        .limit(8)
-        .all()
-    )
-
-    ingresos_por_categoria = (
-        db.session.query(Producto.categoria, db.func.sum(Venta.precio_unitario * Venta.cantidad).label("ingresos"))
-        .join(Venta, Venta.producto_id == Producto.id)
-        .filter(*cond_venta(), Producto.categoria.isnot(None))
-        .group_by(Producto.categoria)
-        .order_by(db.func.sum(Venta.precio_unitario * Venta.cantidad).desc())
-        .all()
-    )
-
-    movimiento_por_hora = (
-        db.session.query(
-            db.func.cast(db.func.strftime("%H", Venta.fecha), db.Integer).label("hora"),
-            db.func.count(Venta.id).label("ventas"),
-            db.func.sum(Venta.precio_unitario * Venta.cantidad).label("ingresos"),
-        )
-        .filter(*cond_venta())
-        .group_by("hora")
-        .order_by(db.func.count(Venta.id).desc())
-        .all()
-    )
-    horas_top = [( _hora_label(hora), ventas, ingresos) for hora, ventas, ingresos in movimiento_por_hora[:6]]
-
-    dias_top = (
-        db.session.query(
-            db.func.strftime("%w", Venta.fecha).label("dia"),
-            db.func.count(Venta.id).label("ventas"),
-            db.func.sum(Venta.precio_unitario * Venta.cantidad).label("ingresos"),
-        )
-        .filter(*cond_venta())
-        .group_by("dia")
-        .order_by(db.func.count(Venta.id).desc())
-        .all()
-    )
-    nombres_dia = {0: "Domingo", 1: "Lunes", 2: "Martes", 3: "Miércoles", 4: "Jueves", 5: "Viernes", 6: "Sábado"}
-    dias_top = [(nombres_dia.get(int(d), "Día"), ventas, ingresos) for d, ventas, ingresos in dias_top[:7]]
-
-    ventas_por_dia = (
-        db.session.query(db.func.date(Venta.fecha).label("fecha"), db.func.sum(Venta.precio_unitario * Venta.cantidad).label("ingresos"))
-        .filter(*cond_venta())
-        .group_by("fecha")
-        .order_by("fecha")
-        .limit(15)
-        .all()
-    )
 
     if es_admin:
-        horarios = HorarioAtencion.query.order_by(HorarioAtencion.dia_numero.asc()).all()
+        ranking = _ranking_empresas()
+        empresas_con_indice = []
+        for emp_id, nombre, tamano, promedio in ranking:
+            seg = _obtener_segmento(float(promedio))
+            empresas_con_indice.append({
+                "id": emp_id,
+                "nombre": nombre,
+                "tamano": tamano,
+                "promedio": round(float(promedio), 2),
+                "segmento": seg.nombre if seg else "Sin segmento",
+            })
+
+        todas_empresas = Empresa.query.filter_by(estado="activo").all()
+        return render_template(
+            "analisis.html",
+            es_admin=True,
+            empresa=None,
+            empresas_con_indice=empresas_con_indice,
+            todas_empresas=todas_empresas,
+        )
     else:
-        horarios = HorarioAtencion.query.filter_by(empresa_id=empresa_id).order_by(HorarioAtencion.dia_numero.asc()).all()
+        if empresa is None:
+            abort(403)
 
-    producto_datos_hora = {hora: {"ventas": v, "ingresos": i} for hora, v, i in movimiento_por_hora}
-    etiquetas_horas = [_hora_label(h) for h in range(7, 21)]
-    productos_chart = {
-        "labels": [nombre for nombre, _c, _u, _i in productos_mas_vendidos],
-        "unidades": [int(u) for _n, _c, u, _i in productos_mas_vendidos],
-        "ingresos": [float(i) for _n, _c, _u, i in productos_mas_vendidos],
-    }
-    horas_chart = {
-        "labels": etiquetas_horas,
-        "ventas": [producto_datos_hora.get(hora, {"ventas": 0})["ventas"] for hora in range(7, 21)],
-        "ingresos": [producto_datos_hora.get(hora, {"ingresos": 0})["ingresos"] for hora in range(7, 21)],
-    }
+        indice_general, dim_puntajes = _calcular_indice_empresa(empresa.id)
+        segmento = _obtener_segmento(indice_general) if indice_general is not None else None
 
-    return render_template(
-        "analisis.html",
-        empresa=empresa,
-        es_admin=es_admin,
-        total_ingresos=total_ingresos,
-        total_unidades=total_unidades,
-        total_ventas=total_ventas,
-        ticket_promedio=ticket_promedio,
-        productos_registrados=productos_registrados,
-        productos_mas_vendidos=productos_mas_vendidos,
-        ingresos_por_categoria=ingresos_por_categoria,
-        horas_top=horas_top,
-        dias_top=dias_top,
-        ventas_por_dia=ventas_por_dia,
-        horarios=horarios,
-        productos_chart=productos_chart,
-        horas_chart=horas_chart,
-    )
+        promedio_sector = _calcular_promedio_sector(empresa.sector_id, empresa.tamano_empresa)
+
+        recomendaciones_dim = {}
+        if dim_puntajes:
+            for dim_id, data in dim_puntajes.items():
+                recs = _obtener_recomendaciones(dim_id, data["puntaje"])
+                if recs:
+                    recomendaciones_dim[dim_id] = recs
+
+        historial = (
+            IndiceMadurez.query
+            .filter_by(empresa_id=empresa.id)
+            .order_by(IndiceMadurez.fecha.asc())
+            .all()
+        )
+
+        return render_template(
+            "analisis.html",
+            es_admin=False,
+            empresa=empresa,
+            indice_general=indice_general,
+            dim_puntajes=dim_puntajes,
+            segmento=segmento,
+            promedio_sector=promedio_sector,
+            recomendaciones_dim=recomendaciones_dim,
+            historial=historial,
+        )

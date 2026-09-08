@@ -2,7 +2,7 @@
 
 {% block title %}Detalle de empresa &middot; Superadmin{% endblock %}
 {% block cabecera %}{{ empresa.nombre }}{% endblock %}
-{% block subcabecera %}Información y estado de la empresa en la plataforma.{% endblock %}
+{% block subcabecera %}Informacion y estado de la empresa en la plataforma.{% endblock %}
 
 {% block contenido %}
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
@@ -10,23 +10,27 @@
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm flex-1">
                 <div>
                     <dt class="text-slate-500">RUC</dt>
-                    <dd class="font-medium text-slate-800">{{ empresa.ruc or '—' }}</dd>
+                    <dd class="font-medium text-slate-800">{{ empresa.ruc or '---' }}</dd>
                 </div>
                 <div>
                     <dt class="text-slate-500">Sector</dt>
-                    <dd class="font-medium text-slate-800">{{ empresa.sector.nombre if empresa.sector else '—' }}</dd>
+                    <dd class="font-medium text-slate-800">{{ empresa.sector.nombre if empresa.sector else '---' }}</dd>
                 </div>
                 <div>
                     <dt class="text-slate-500">Actividad</dt>
-                    <dd class="font-medium text-slate-800">{{ empresa.actividad or '—' }}</dd>
+                    <dd class="font-medium text-slate-800">{{ empresa.actividad or '---' }}</dd>
                 </div>
                 <div>
-                    <dt class="text-slate-500">Teléfono</dt>
-                    <dd class="font-medium text-slate-800">{{ empresa.telefono or '—' }}</dd>
+                    <dt class="text-slate-500">Tamano</dt>
+                    <dd class="font-medium text-slate-800">{{ empresa.etiqueta_tamano }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500">Telefono</dt>
+                    <dd class="font-medium text-slate-800">{{ empresa.telefono or '---' }}</dd>
                 </div>
                 <div>
                     <dt class="text-slate-500">Correo</dt>
-                    <dd class="font-medium text-slate-800">{{ empresa.correo or '—' }}</dd>
+                    <dd class="font-medium text-slate-800">{{ empresa.correo or '---' }}</dd>
                 </div>
                 <div>
                     <dt class="text-slate-500">Estado</dt>
@@ -42,21 +46,21 @@
                 </div>
                 <div class="sm:col-span-2">
                     <dt class="text-slate-500">Notas del superadministrador</dt>
-                    <dd class="font-medium text-slate-800">{{ empresa.notas_admin or '—' }}</dd>
+                    <dd class="font-medium text-slate-800">{{ empresa.notas_admin or '---' }}</dd>
                 </div>
             </dl>
 
             <div class="flex flex-col gap-2 shrink-0">
                 {% if empresa.esta_pendiente %}
                 <form method="post" action="{{ url_for('superadmin.aprobar_empresa', empresa_id=empresa.id) }}">
-                    <button class="w-full px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition">✓ Aprobar</button>
+                    <button class="w-full px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition">Aprobar</button>
                 </form>
                 <form method="post" action="{{ url_for('superadmin.rechazar_empresa', empresa_id=empresa.id) }}">
-                    <button class="w-full px-4 py-2.5 rounded-lg bg-rose-600 text-white text-sm font-semibold hover:bg-rose-700 transition">✕ Rechazar</button>
+                    <button class="w-full px-4 py-2.5 rounded-lg bg-rose-600 text-white text-sm font-semibold hover:bg-rose-700 transition">Rechazar</button>
                 </form>
                 {% elif empresa.esta_activa %}
                 <form method="post" action="{{ url_for('superadmin.suspender_empresa', empresa_id=empresa.id) }}"
-                      onsubmit="return confirm('¿Suspender el acceso de esta empresa?')">
+                      onsubmit="return confirm('Suspender el acceso de esta empresa?')">
                     <button class="w-full px-4 py-2.5 rounded-lg border border-amber-300 text-amber-700 text-sm font-semibold hover:bg-amber-50 transition">Suspender</button>
                 </form>
                 {% elif empresa.esta_inactiva %}
@@ -68,18 +72,16 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
-            <p class="text-3xl font-black text-slate-900">{{ productos }}</p>
-            <p class="text-sm text-slate-500 mt-1">Productos</p>
+            <p class="text-3xl font-black text-slate-900">{{ usuarios | length }}</p>
+            <p class="text-sm text-slate-500 mt-1">Usuarios</p>
         </div>
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
-            <p class="text-3xl font-black text-slate-900">{{ ventas }}</p>
-            <p class="text-sm text-slate-500 mt-1">Ventas</p>
-        </div>
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
-            <p class="text-3xl font-black text-slate-900">{{ horarios }}</p>
-            <p class="text-sm text-slate-500 mt-1">Horarios</p>
+            <p class="text-3xl font-black {% if ultimo_indice %}{% if ultimo_indice.puntaje >= 70 %}text-emerald-600{% elif ultimo_indice.puntaje >= 40 %}text-amber-600{% else %}text-red-600{% endif %}{% endif %}">
+                {{ ultimo_indice.puntaje if ultimo_indice else '---' }}
+            </p>
+            <p class="text-sm text-slate-500 mt-1">Indice de madurez</p>
         </div>
     </div>
 
@@ -90,7 +92,7 @@
             <li class="py-3 flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-slate-800">{{ u.nombre }} {% if u.cargo %}<span class="text-slate-400">({{ u.cargo }})</span>{% endif %}</p>
-                    <p class="text-xs text-slate-400">{{ u.email }} · {{ u.etiqueta_rol }}</p>
+                    <p class="text-xs text-slate-400">{{ u.email }} | {{ u.etiqueta_rol }}</p>
                 </div>
                 <span class="text-xs px-2 py-0.5 rounded-full {{ 'bg-emerald-100 text-emerald-700' if u.activo else 'bg-slate-100 text-slate-500' }}">
                     {{ 'Activo' if u.activo else 'Inactivo' }}

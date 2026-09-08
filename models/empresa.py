@@ -16,6 +16,7 @@ class Empresa(TimestampMixin, db.Model):
     sitio_web = db.Column(db.String(255), nullable=True)
     estado = db.Column(db.String(20), nullable=False, default="activo")
     notas_admin = db.Column(db.Text, nullable=True)
+    tamano_empresa = db.Column(db.String(20), nullable=False, default="PEQUENA")
 
     @property
     def esta_pendiente(self):
@@ -41,6 +42,15 @@ class Empresa(TimestampMixin, db.Model):
             "rechazado": "Rechazada",
             "inactivo": "Inactiva",
         }.get(self.estado, self.estado)
+
+    @property
+    def etiqueta_tamano(self):
+        return {
+            "MICRO": "Microempresa",
+            "PEQUENA": "Pequeña empresa",
+            "MEDIANA": "Median empresa",
+            "GRANDE": "Gran empresa",
+        }.get(self.tamano_empresa, self.tamano_empresa)
 
     def __repr__(self):
         return f"<Empresa {self.nombre}>"

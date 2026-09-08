@@ -47,7 +47,6 @@
             background: transparent;
         }
 
-        /* ── Sidebar Uiverse.io style ── */
         .gh-sidebar {
             background-color: #0D1117;
         }
@@ -79,7 +78,6 @@
             outline: none;
         }
 
-        /* Barra indicadora azul a la izquierda */
         .gh-sidebar .gh-nav-item::before {
             content: "";
             position: absolute;
@@ -105,7 +103,6 @@
             opacity: 1;
         }
 
-        /* Efecto blur en hermanos al hacer hover */
         .gh-sidebar nav:hover > .gh-nav-item:not(:hover) {
             filter: blur(0.8px);
             transform: scale(0.98);
@@ -116,14 +113,12 @@
             transition: filter 300ms ease, transform 300ms ease, opacity 300ms ease;
         }
 
-        /* Reset al salir del hover del nav */
         .gh-sidebar nav:not(:hover) > .gh-nav-item {
             filter: none;
             transform: scale(1);
             opacity: 1;
         }
 
-        /* Separadores de sección */
         .gh-sidebar .gh-section-label {
             padding: 0.75rem 0.75rem 0.25rem;
             font-size: 0.65rem;
@@ -139,7 +134,6 @@
             margin: 0.5rem 0.75rem;
         }
 
-        /* Badge de notificación */
         .gh-sidebar .gh-badge {
             font-size: 0.6rem;
             padding: 0.1rem 0.4rem;
@@ -150,136 +144,11 @@
             line-height: 1;
         }
 
-        /* Footer del sidebar */
         .gh-sidebar-footer {
             border-top: 1px solid #21262C;
             color: #484f58;
         }
 
-        /* ── Delete button animation (Uiverse.io) ── */
-        .gh-delete-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: rgb(20, 20, 20);
-            border: none;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.164);
-            cursor: pointer;
-            transition-duration: 0.3s;
-            overflow: hidden;
-            position: relative;
-            padding: 0;
-            flex-shrink: 0;
-        }
-
-        .gh-delete-btn .gh-delete-icon {
-            width: 12px;
-            transition-duration: 0.3s;
-        }
-
-        .gh-delete-btn .gh-delete-icon path {
-            fill: white;
-        }
-
-        .gh-delete-btn:hover {
-            width: 140px;
-            border-radius: 50px;
-            transition-duration: 0.3s;
-            background-color: rgb(255, 69, 69);
-            align-items: center;
-        }
-
-        .gh-delete-btn:hover .gh-delete-icon {
-            width: 50px;
-            transition-duration: 0.3s;
-            transform: translateY(60%);
-        }
-
-        .gh-delete-btn::before {
-            position: absolute;
-            top: -20px;
-            content: "Eliminar";
-            color: white;
-            transition-duration: 0.3s;
-            font-size: 2px;
-            white-space: nowrap;
-        }
-
-        .gh-delete-btn:hover::before {
-            font-size: 13px;
-            opacity: 1;
-            transform: translateY(30px);
-            transition-duration: 0.3s;
-        }
-
-        /* Variante pequeña para tablas — no desplaza contenido */
-        .gh-delete-btn-sm {
-            width: 28px;
-            height: 28px;
-            min-width: 28px;
-            border-radius: 50%;
-            background-color: rgb(20, 20, 20);
-            border: none;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.12);
-            cursor: pointer;
-            transition-duration: 0.3s;
-            overflow: hidden;
-            position: relative;
-            padding: 0;
-            flex-shrink: 0;
-            vertical-align: middle;
-        }
-
-        .gh-delete-btn-sm .gh-delete-icon {
-            width: 8px;
-            min-width: 8px;
-            transition-duration: 0.3s;
-        }
-
-        .gh-delete-btn-sm .gh-delete-icon path {
-            fill: white;
-        }
-
-        .gh-delete-btn-sm:hover {
-            width: 80px;
-            border-radius: 50px;
-            transition-duration: 0.3s;
-            background-color: rgb(255, 69, 69);
-            align-items: center;
-        }
-
-        .gh-delete-btn-sm:hover .gh-delete-icon {
-            width: 26px;
-            transition-duration: 0.3s;
-            transform: translateY(50%);
-        }
-
-        .gh-delete-btn-sm::before {
-            position: absolute;
-            top: -20px;
-            content: "Eliminar";
-            color: white;
-            transition-duration: 0.3s;
-            font-size: 0px;
-            white-space: nowrap;
-        }
-
-        .gh-delete-btn-sm:hover::before {
-            font-size: 10px;
-            opacity: 1;
-            transform: translateY(26px);
-            transition-duration: 0.3s;
-        }
-
-        /* Keep form inline for delete buttons */
         .gh-delete-form {
             display: inline-flex;
             align-items: center;
@@ -298,49 +167,53 @@
                     GH</div>
                 <div>
                     <h1 class="text-white font-bold text-lg leading-tight">Growth Horizon</h1>
-                    <p class="text-xs" style="color: #484f58;">Plataforma empresarial</p>
+                    <p class="text-xs" style="color: #484f58;">Diagnostico de madurez</p>
                 </div>
             </div>
 
             <nav class="flex-1 overflow-y-auto scrollbar-thin px-3 py-4 space-y-1">
                 <a href="{{ url_for('main.dashboard') }}"
                     class="gh-nav-item {% if request.endpoint == 'main.dashboard' %}gh-active{% endif %}">
-                    <span class="text-lg">▦</span> Panel General
+                    <span class="text-lg">[#]</span> Panel General
                 </a>
 
                 {% if current_user.is_authenticated and current_user.es_superadmin %}
                 <div class="gh-divider"></div>
                 <p class="gh-section-label">Superadministrador</p>
                 <a href="{{ url_for('superadmin.panel') }}"
-                    class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('superadmin') %}gh-active{% endif %}">
-                    <span class="text-lg">🛡️</span> Panel global
+                    class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('superadmin') and 'diagnostico' not in request.endpoint %}gh-active{% endif %}">
+                    <span class="text-lg">[S]</span> Panel global
                 </a>
                 <a href="{{ url_for('superadmin.empresas') }}"
                     class="gh-nav-item {% if request.endpoint == 'superadmin.empresas' %}gh-active{% endif %}">
-                    <span class="text-lg">🏢</span> Empresas
+                    <span class="text-lg">[E]</span> Empresas
                 </a>
                 <a href="{{ url_for('superadmin.empresas_pendientes') }}"
                     class="gh-nav-item {% if request.endpoint == 'superadmin.empresas_pendientes' %}gh-active{% endif %}">
-                    <span class="flex items-center gap-3 flex-1"><span class="text-lg">⏳</span> Por aprobar</span>
+                    <span class="flex items-center gap-3 flex-1"><span class="text-lg">[P]</span> Por aprobar</span>
                     {% if empresas_pendientes %}
                     <span class="gh-badge">{{ empresas_pendientes }}</span>
                     {% endif %}
                 </a>
-                <a href="{{ url_for('superadmin.permisos') }}"
-                    class="gh-nav-item {% if request.endpoint == 'superadmin.permisos' %}gh-active{% endif %}">
-                    <span class="text-lg">🔐</span> Permisos globales
-                </a>
                 <a href="{{ url_for('sectores.listar') }}"
                     class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('sectores') %}gh-active{% endif %}">
-                    <span class="text-lg">🗂️</span> Sectores
+                    <span class="text-lg">[SC]</span> Sectores
                 </a>
-                <a href="{{ url_for('seguridad.auditoria') }}"
-                    class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('seguridad') %}gh-active{% endif %}">
-                    <span class="text-lg">📜</span> Auditoría
+                <a href="{{ url_for('diagnostico_admin.panel') }}"
+                    class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('diagnostico_admin') %}gh-active{% endif %}">
+                    <span class="text-lg">[D]</span> Dimensiones/Indicadores
                 </a>
                 <a href="{{ url_for('analisis.principal') }}"
                     class="gh-nav-item {% if request.endpoint == 'analisis.principal' %}gh-active{% endif %}">
-                    <span class="text-lg">📈</span> Análisis global
+                    <span class="text-lg">[A]</span> Analisis global
+                </a>
+                <a href="{{ url_for('seguridad.auditoria') }}"
+                    class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('seguridad') %}gh-active{% endif %}">
+                    <span class="text-lg">[L]</span> Auditoria
+                </a>
+                <a href="{{ url_for('superadmin.permisos') }}"
+                    class="gh-nav-item {% if request.endpoint == 'superadmin.permisos' %}gh-active{% endif %}">
+                    <span class="text-lg">[G]</span> Permisos globales
                 </a>
                 {% endif %}
 
@@ -350,32 +223,28 @@
                 {% if current_user.empresa %}
                 <a href="{{ url_for('cliente.panel') }}"
                     class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('cliente.panel') %}gh-active{% endif %}">
-                    <span class="text-lg">📊</span> Panel
-                </a>
-                <a href="{{ url_for('cliente.productos_listar') }}"
-                    class="gh-nav-item {% if request.endpoint and request.endpoint == 'cliente.productos_listar' %}gh-active{% endif %}">
-                    <span class="text-lg">📦</span> {% if current_user.es_empleado %}Inventario{% else %}Productos{% endif %}
-                </a>
-                <a href="{{ url_for('cliente.horarios_listar') }}"
-                    class="gh-nav-item {% if request.endpoint and request.endpoint == 'cliente.horarios_listar' %}gh-active{% endif %}">
-                    <span class="text-lg">🕐</span> Horarios
-                </a>
-                <a href="{{ url_for('cliente.ventas_listar') }}"
-                    class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('cliente.ventas') %}gh-active{% endif %}">
-                    <span class="text-lg">💰</span> Ventas
+                    <span class="text-lg">[#]</span> Panel
                 </a>
                 {% if current_user.puede_administrar %}
-                <a href="{{ url_for('cliente.empleados_listar') }}"
-                    class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('cliente.empleados') %}gh-active{% endif %}">
-                    <span class="text-lg">👥</span> Empleados
+                <a href="{{ url_for('diagnostico.responder') }}"
+                    class="gh-nav-item {% if request.endpoint == 'diagnostico.responder' %}gh-active{% endif %}">
+                    <span class="text-lg">[D]</span> Responder diagnostico
                 </a>
-                <a href="{{ url_for('cliente.seguridad') }}"
-                    class="gh-nav-item {% if request.endpoint and request.endpoint == 'cliente.seguridad' %}gh-active{% endif %}">
-                    <span class="text-lg">🔒</span> Seguridad
+                <a href="{{ url_for('diagnostico.resultados') }}"
+                    class="gh-nav-item {% if request.endpoint == 'diagnostico.resultados' %}gh-active{% endif %}">
+                    <span class="text-lg">[R]</span> Ver resultados
                 </a>
                 <a href="{{ url_for('analisis.principal') }}"
                     class="gh-nav-item {% if request.endpoint == 'analisis.principal' %}gh-active{% endif %}">
-                    <span class="text-lg">📈</span> Análisis
+                    <span class="text-lg">[A]</span> Analisis
+                </a>
+                <a href="{{ url_for('cliente.empleados_listar') }}"
+                    class="gh-nav-item {% if request.endpoint and request.endpoint.startswith('cliente.empleados') %}gh-active{% endif %}">
+                    <span class="text-lg">[U]</span> Empleados
+                </a>
+                <a href="{{ url_for('cliente.seguridad') }}"
+                    class="gh-nav-item {% if request.endpoint == 'cliente.seguridad' %}gh-active{% endif %}">
+                    <span class="text-lg">[L]</span> Seguridad
                 </a>
                 {% endif %}
                 {% endif %}
@@ -387,7 +256,6 @@
             </div>
         </aside>
 
-        <!-- Móvil: barra superior -->
         <div
             class="md:hidden flex items-center justify-between text-white px-4 py-3 fixed top-0 inset-x-0 z-20" style="background-color: #0D1117;">
             <div class="flex items-center gap-2 font-bold">GH Growth Horizon</div>
@@ -397,11 +265,11 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
-                Menú
+                Menu
             </button>
             <a href="{{ url_for('auth.logout') }}" class="text-sm" style="color: #8b949e;">Salir</a>
             {% else %}
-            <a href="{{ url_for('auth.login') }}" class="text-sm" style="color: #8b949e;">Iniciar sesión</a>
+            <a href="{{ url_for('auth.login') }}" class="text-sm" style="color: #8b949e;">Iniciar sesion</a>
             {% endif %}
         </div>
 

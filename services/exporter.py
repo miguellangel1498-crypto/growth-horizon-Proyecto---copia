@@ -42,21 +42,11 @@ def _crear_libro(titulo, hoja, encabezados, filas):
     return buf
 
 
-def exportar_ventas(filas):
-    encabezados = ["#", "Empresa", "Producto", "Categoría", "Cantidad", "Precio Unitario", "Total", "Fecha"]
+def exportar_diagnostico(filas):
+    encabezados = ["Empresa", "Sector", "Tamano", "Indice General", "Segmento", "Fecha"]
     return _crear_libro(
-        "Reporte de Ventas - Growth Horizon",
-        "Ventas",
-        encabezados,
-        [list(fila) for fila in filas],
-    )
-
-
-def exportar_inventario(filas):
-    encabezados = ["ID", "Empresa", "Producto", "Categoría", "Precio", "Unidades Vendidas", "Ingresos"]
-    return _crear_libro(
-        "Reporte de Inventario - Growth Horizon",
-        "Inventario",
+        "Reporte de Diagnostico - Growth Horizon",
+        "Diagnostico",
         encabezados,
         [list(fila) for fila in filas],
     )

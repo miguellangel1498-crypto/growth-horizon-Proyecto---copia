@@ -11,7 +11,7 @@ ROL_ANALISTA = "empleado"
 ROLES_DISPONIBLES = {
     ROL_SUPERADMIN: "Superadministrador",
     ROL_EMPRESA: "Administrador de Empresa",
-    ROL_EMPLEADO: "Empleado / Vendedor",
+    ROL_EMPLEADO: "Empleado",
 }
 
 
@@ -60,67 +60,31 @@ MATRIZ_PERMISOS = [
         "empleado": False,
     },
     {
+        "permiso": "Administrar dimensiones/indicadores",
+        "superadmin": True,
+        "empresa": False,
+        "empleado": False,
+    },
+    {
         "permiso": "Panel de su propia empresa",
         "superadmin": False,
         "empresa": True,
         "empleado": False,
     },
     {
-        "permiso": "Administrar productos (crear/editar/eliminar)",
+        "permiso": "Responder diagnóstico",
         "superadmin": False,
         "empresa": True,
         "empleado": False,
     },
     {
-        "permiso": "Consultar inventario y precios",
-        "superadmin": False,
-        "empresa": True,
-        "empleado": True,
-    },
-    {
-        "permiso": "Buscar productos",
-        "superadmin": False,
-        "empresa": True,
-        "empleado": True,
-    },
-    {
-        "permiso": "Configuración y horarios",
-        "superadmin": False,
-        "empresa": True,
-        "empleado": False,
-    },
-    {
-        "permiso": "Registrar ventas",
-        "superadmin": False,
-        "empresa": True,
-        "empleado": True,
-    },
-    {
-        "permiso": "Agregar inventario nuevo",
-        "superadmin": False,
-        "empresa": True,
-        "empleado": True,
-    },
-    {
-        "permiso": "Reportes financieros (COP)",
-        "superadmin": False,
-        "empresa": True,
-        "empleado": False,
-    },
-    {
-        "permiso": "Exportar reportes (Excel)",
+        "permiso": "Ver resultados de diagnóstico",
         "superadmin": False,
         "empresa": True,
         "empleado": False,
     },
     {
         "permiso": "Gestionar empleados",
-        "superadmin": False,
-        "empresa": True,
-        "empleado": False,
-    },
-    {
-        "permiso": "Análisis de negocio",
         "superadmin": False,
         "empresa": True,
         "empleado": False,

@@ -1,8 +1,11 @@
 from models.auditoria import Auditoria
 from models.configuracion import Configuracion
+from models.dimension import Dimension
 from models.empresa import Empresa
-from models.horario import HorarioAtencion, DIAS_SEMANA
-from models.producto import Producto
+from models.indice_madurez import IndiceMadurez
+from models.indicador import Indicador
+from models.recomendacion import Recomendacion
+from models.respuesta_diagnostico import RespuestaDiagnostico
 from models.roles import (
     ROL_ANALISTA,
     ROL_EMPLEADO,
@@ -13,19 +16,21 @@ from models.roles import (
     MATRIZ_PERMISOS,
 )
 from models.sector import Sector
+from models.segmento import Segmento
 from models.usuario import Usuario
-from models.venta import Venta
 
 __all__ = [
     "Auditoria",
     "Configuracion",
+    "Dimension",
     "Empresa",
-    "HorarioAtencion",
-    "DIAS_SEMANA",
-    "Producto",
+    "IndiceMadurez",
+    "Indicador",
+    "Recomendacion",
+    "RespuestaDiagnostico",
     "Sector",
+    "Segmento",
     "Usuario",
-    "Venta",
     "ROL_ANALISTA",
     "ROL_EMPLEADO",
     "ROL_EMPRESA",

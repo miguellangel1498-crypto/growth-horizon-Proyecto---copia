@@ -1,182 +1,22 @@
 ﻿{% extends 'base.html' %}
-{% block title %}Mi Panel — {{ empresa.nombre }}{% endblock %}
+{% block title %}Mi Panel -- {{ empresa.nombre }}{% endblock %}
 
 {% block content %}
-<div class="empleado-hero">
-  <div class="empleado-hero__inner">
-    <div class="empleado-hero__greeting">
-      <div class="empleado-hero__avatar">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z"/></svg>
-      </div>
-      <div>
-        <h1 class="empleado-hero__name">Hola, {{ current_user.nombre.capitalize() }} 👋</h1>
-        <p class="empleado-hero__empresa">{{ empresa.nombre }}</p>
-        {% if current_user.cargo %}<span class="empleado-hero__cargo">{{ current_user.cargo }}</span>{% endif %}
-      </div>
+<div class="space-y-6">
+    <div class="rounded-2xl bg-gradient-to-br from-indigo-600 to-emerald-600 p-6 sm:p-8 text-white shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <p class="text-sm font-medium text-white/80">Panel del empleado</p>
+                <h1 class="text-2xl sm:text-3xl font-black mt-1">Hola, {{ current_user.nombre }}</h1>
+                <p class="text-white/90 mt-1">{{ empresa.nombre }}</p>
+                {% if current_user.cargo %}<span class="inline-block mt-2 bg-white/20 text-white/80 rounded-full px-3 py-0.5 text-xs font-semibold">{{ current_user.cargo }}</span>{% endif %}
+            </div>
+        </div>
     </div>
-    <p class="empleado-hero__fecha">{{ hoy.strftime('%A %d de %B, %Y') }}</p>
-  </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <h3 class="font-bold text-slate-900 mb-2">Tu rol</h3>
+        <p class="text-sm text-slate-500">Como empleado, puedes consultar la informacion de la empresa. El diagnostico de madurez es gestionado por el administrador de la empresa.</p>
+    </div>
 </div>
-
-<div class="empleado-stats">
-  <div class="empleado-stat-card empleado-stat-card--blue">
-    <div class="empleado-stat-card__icon">🛍️</div>
-    <div class="empleado-stat-card__value">{{ total_ventas_hoy }}</div>
-    <div class="empleado-stat-card__label">Ventas registradas hoy</div>
-  </div>
-  <div class="empleado-stat-card empleado-stat-card--purple">
-    <div class="empleado-stat-card__icon">📦</div>
-    <div class="empleado-stat-card__value">{{ total_productos }}</div>
-    <div class="empleado-stat-card__label">Productos disponibles</div>
-  </div>
-</div>
-
-<div class="empleado-acciones">
-  <h2 class="empleado-acciones__titulo">¿Qué deseas hacer?</h2>
-  <div class="empleado-acciones__grid">
-    <a href="{{ url_for('empleado.ventas_nueva') }}" class="empleado-accion-card empleado-accion-card--primary">
-      <div class="empleado-accion-card__icon">💰</div>
-      <div class="empleado-accion-card__titulo">Registrar Venta</div>
-      <div class="empleado-accion-card__desc">Agrega una nueva transacción al sistema</div>
-    </a>
-    <a href="{{ url_for('empleado.productos') }}" class="empleado-accion-card empleado-accion-card--secondary">
-      <div class="empleado-accion-card__icon">🔍</div>
-      <div class="empleado-accion-card__titulo">Consultar Productos</div>
-      <div class="empleado-accion-card__desc">Busca precios y disponibilidad</div>
-    </a>
-    <a href="{{ url_for('empleado.ventas') }}" class="empleado-accion-card empleado-accion-card--info">
-      <div class="empleado-accion-card__icon">📋</div>
-      <div class="empleado-accion-card__titulo">Ventas del Día</div>
-      <div class="empleado-accion-card__desc">Revisa las transacciones de hoy</div>
-    </a>
-  </div>
-</div>
-
-{% if ventas_hoy %}
-<div class="empleado-ventas-hoy">
-  <h2 class="empleado-ventas-hoy__titulo">Últimas ventas registradas hoy</h2>
-  <div class="empleado-tabla-wrap">
-    <table class="empleado-tabla">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Producto</th>
-          <th>Cantidad</th>
-          <th>Hora</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for venta in ventas_hoy[:8] %}
-        <tr>
-          <td class="empleado-tabla__id">{{ venta.id }}</td>
-          <td>{{ venta.producto.nombre if venta.producto else '—' }}</td>
-          <td><span class="empleado-badge">× {{ venta.cantidad }}</span></td>
-          <td class="empleado-tabla__hora">{{ venta.fecha.strftime('%H:%M') }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% if ventas_hoy|length > 8 %}
-  <a href="{{ url_for('empleado.ventas') }}" class="empleado-ver-mas">Ver todas ({{ ventas_hoy|length }}) →</a>
-  {% endif %}
-</div>
-{% endif %}
-
-<style>
-/* ── Portal del Empleado ─────────────────────────── */
-.empleado-hero {
-  background: linear-gradient(135deg, #1a1f3a 0%, #0f3460 50%, #16213e 100%);
-  border-radius: 20px;
-  margin-bottom: 2rem;
-  overflow: hidden;
-  position: relative;
-}
-.empleado-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at top right, rgba(99,102,241,0.3) 0%, transparent 60%);
-}
-.empleado-hero__inner {
-  padding: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-  position: relative;
-}
-.empleado-hero__greeting { display: flex; align-items: center; gap: 1.2rem; }
-.empleado-hero__avatar {
-  width: 64px; height: 64px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; flex-shrink: 0;
-}
-.empleado-hero__name { font-size: 1.6rem; font-weight: 700; color: #fff; margin: 0 0 0.2rem; }
-.empleado-hero__empresa { color: rgba(255,255,255,0.65); margin: 0; font-size: 0.95rem; }
-.empleado-hero__cargo {
-  display: inline-block; margin-top: 0.4rem;
-  background: rgba(99,102,241,0.3); color: #a5b4fc;
-  border-radius: 999px; padding: 0.15rem 0.8rem; font-size: 0.78rem; font-weight: 600;
-}
-.empleado-hero__fecha { color: rgba(255,255,255,0.45); font-size: 0.9rem; text-transform: capitalize; }
-
-/* Stats */
-.empleado-stats {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.2rem; margin-bottom: 2rem;
-}
-.empleado-stat-card {
-  border-radius: 16px; padding: 1.5rem 1.8rem;
-  display: flex; flex-direction: column; gap: 0.5rem;
-  position: relative; overflow: hidden;
-}
-.empleado-stat-card--blue { background: linear-gradient(135deg, #1e40af, #3b82f6); }
-.empleado-stat-card--purple { background: linear-gradient(135deg, #6d28d9, #8b5cf6); }
-.empleado-stat-card__icon { font-size: 2rem; }
-.empleado-stat-card__value { font-size: 2.5rem; font-weight: 800; color: #fff; line-height: 1; }
-.empleado-stat-card__label { color: rgba(255,255,255,0.7); font-size: 0.9rem; }
-
-/* Acciones */
-.empleado-acciones__titulo { font-size: 1.15rem; font-weight: 700; color: var(--text-primary, #f1f5f9); margin-bottom: 1rem; }
-.empleado-acciones__grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem; margin-bottom: 2rem;
-}
-.empleado-accion-card {
-  border-radius: 16px; padding: 1.8rem 1.5rem;
-  text-decoration: none; display: flex; flex-direction: column; gap: 0.5rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
-}
-.empleado-accion-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
-.empleado-accion-card--primary { background: linear-gradient(135deg, #065f46, #059669); }
-.empleado-accion-card--secondary { background: linear-gradient(135deg, #1e3a8a, #2563eb); }
-.empleado-accion-card--info { background: linear-gradient(135deg, #312e81, #4f46e5); }
-.empleado-accion-card__icon { font-size: 2.2rem; }
-.empleado-accion-card__titulo { font-size: 1.05rem; font-weight: 700; color: #fff; }
-.empleado-accion-card__desc { font-size: 0.83rem; color: rgba(255,255,255,0.65); }
-
-/* Tabla ventas */
-.empleado-ventas-hoy { background: var(--surface, #1e2235); border-radius: 16px; padding: 1.5rem; }
-.empleado-ventas-hoy__titulo { font-size: 1.05rem; font-weight: 700; color: var(--text-primary, #f1f5f9); margin-bottom: 1rem; }
-.empleado-tabla-wrap { overflow-x: auto; }
-.empleado-tabla { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-.empleado-tabla th { text-align: left; padding: 0.6rem 1rem; color: rgba(255,255,255,0.45); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.07); }
-.empleado-tabla td { padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-primary, #f1f5f9); }
-.empleado-tabla__id { color: rgba(255,255,255,0.3); font-size: 0.8rem; }
-.empleado-tabla__hora { color: rgba(255,255,255,0.45); font-family: monospace; }
-.empleado-badge {
-  background: rgba(99,102,241,0.2); color: #a5b4fc;
-  border-radius: 999px; padding: 0.15rem 0.7rem; font-size: 0.82rem; font-weight: 600;
-}
-.empleado-ver-mas {
-  display: inline-block; margin-top: 1rem;
-  color: #6366f1; text-decoration: none; font-size: 0.9rem; font-weight: 600;
-}
-.empleado-ver-mas:hover { color: #818cf8; }
-</style>
 {% endblock %}

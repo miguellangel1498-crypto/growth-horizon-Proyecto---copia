@@ -144,23 +144,27 @@ def activar_empresa(empresa_id):
 @superadmin_requerido
 def detalle_empresa(empresa_id):
     empresa = _empresa_o_404(empresa_id)
-    from models import HorarioAtencion, Producto, Venta
 
-    productos = Producto.query.filter_by(empresa_id=empresa.id).count()
-    horarios = HorarioAtencion.query.filter_by(empresa_id=empresa.id).count()
-    ventas = Venta.query.filter_by(empresa_id=empresa.id).count()
     usuarios = (
         Usuario.query.filter(Usuario.empresa_id == empresa.id, Usuario.rol.in_([ROL_EMPRESA, ROL_EMPLEADO]))
         .order_by(Usuario.nombre.asc())
         .all()
     )
+
+    from models import IndiceMadurez
+
+    ultimo_indice = (
+        IndiceMadurez.query
+        .filter_by(empresa_id=empresa.id)
+        .order_by(IndiceMadurez.fecha.desc())
+        .first()
+    )
+
     return render_template(
         "superadmin/detalle_empresa.html",
         empresa=empresa,
-        productos=productos,
-        horarios=horarios,
-        ventas=ventas,
         usuarios=usuarios,
+        ultimo_indice=ultimo_indice,
     )
 
 
@@ -190,5 +194,5 @@ def permisos():
         "superadmin/permisos.html",
         toggles=toggles,
         matriz=MATRIZ_PERMISOS,
-        roles=["superadmin", "empresa", "empleado", "analista"],
+        roles=["superadmin", "empresa", "empleado"],
     )

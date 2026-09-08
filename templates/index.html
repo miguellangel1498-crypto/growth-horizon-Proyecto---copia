@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Growth Horizon &middot; Inteligencia empresarial por sectores</title>
+    <title>Growth Horizon &middot; Diagnostico de madurez empresarial</title>
     <meta name="description"
-        content="Plataforma de análisis para empresas: clasificación por sectores, gestión de productos y ventas, y analítica profunda con trazabilidad completa.">
+        content="Plataforma de diagnostico de madurez empresarial y digital para pequenas y medianas empresas.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ripple.css') }}">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,816 +27,171 @@
         }
     </script>
     <style>
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        }
-
-        .bg-grid {
-            background-image: linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
-            background-size: 44px 44px;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        /* ========== KEYFRAMES ========== */
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to   { opacity: 1; }
-        }
-
-        @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.92); }
-            to   { opacity: 1; transform: scale(1); }
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.0); }
-            50%      { box-shadow: 0 0 20px 4px rgba(6, 182, 212, 0.25); }
-        }
-
-        /* ========== HERO ENTRANCE ========== */
-        .anim-hero-badge {
-            animation: fadeUp 0.7s ease-out 0.1s both;
-        }
-        .anim-hero-title {
-            animation: fadeUp 0.8s ease-out 0.25s both;
-        }
-        .anim-hero-subtitle {
-            animation: fadeUp 0.8s ease-out 0.4s both;
-        }
-        .anim-hero-btns {
-            animation: fadeUp 0.7s ease-out 0.55s both;
-        }
-        .anim-hero-note {
-            animation: fadeIn 0.6s ease-out 0.7s both;
-        }
-        .anim-hero-metrics {
-            animation: scaleIn 0.7s ease-out 0.8s both;
-        }
-
-        /* ========== BOTONES HOVER ========== */
-        .btn-primary {
-            position: relative;
-            transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
-        }
-        .btn-primary:hover {
-            transform: translateY(-3px) scale(1.03);
-            box-shadow: 0 8px 30px -4px rgba(6, 182, 212, 0.45);
-        }
-        .btn-primary:active {
-            transform: translateY(0) scale(0.98);
-            transition-duration: 0.1s;
-        }
-
-        .btn-outline {
-            transition: transform 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
-        }
-        .btn-outline:hover {
-            transform: translateY(-2px);
-            border-color: rgba(6, 182, 212, 0.5);
-            background-color: rgba(6, 182, 212, 0.08);
-        }
-        .btn-outline:active {
-            transform: translateY(0);
-            transition-duration: 0.1s;
-        }
-
-        /* ========== SCROLL REVEAL ========== */
-        .reveal {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-        .reveal.revealed {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .reveal-left {
-            opacity: 0;
-            transform: translateX(-40px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-        .reveal-left.revealed {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .reveal-right {
-            opacity: 0;
-            transform: translateX(40px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-        .reveal-right.revealed {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .reveal-scale {
-            opacity: 0;
-            transform: scale(0.9);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-        .reveal-scale.revealed {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        /* stagger delay helpers */
-        .delay-1 { transition-delay: 0.08s; }
-        .delay-2 { transition-delay: 0.16s; }
-        .delay-3 { transition-delay: 0.24s; }
-        .delay-4 { transition-delay: 0.32s; }
-        .delay-5 { transition-delay: 0.40s; }
-
-        /* ========== CARD HOVER ========== */
-        .card-hover {
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-        }
-        .card-hover:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.5);
-        }
-
-        /* ========== CAROUSEL ========== */
-        .hero-carousel {
-            position: relative;
-            overflow: hidden;
-        }
-        .hero-carousel .carousel-item {
-            height: 520px;
-            transition: height 0.4s ease;
-        }
-        @media (min-width: 768px) {
-            .hero-carousel .carousel-item {
-                height: 560px;
-            }
-        }
-        .hero-carousel .carousel-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .hero-carousel::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(
-                to bottom,
-                rgba(2, 6, 23, 0.55) 0%,
-                rgba(2, 6, 23, 0.75) 50%,
-                rgba(2, 6, 23, 0.95) 100%
-            );
-            z-index: 1;
-        }
-        .hero-carousel .carousel-inner {
-            position: relative;
-            z-index: 0;
-        }
-        .hero-carousel .carousel-caption {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 0 1.5rem;
-        }
-
-        /* controles del carrusel: posicionados a los lados con elegancia */
-        .hero-carousel .carousel-control-prev,
-        .hero-carousel .carousel-control-next {
-            position: absolute !important;
-            top: 50% !important;
-            bottom: auto !important;
-            transform: translateY(-50%);
-            z-index: 20;
-            width: 3.5rem !important;
-            height: 3.5rem !important;
-            max-height: 3.5rem !important;
-            padding: 0;
-            opacity: 0.85;
-            background: transparent !important;
-            border: none;
-            display: flex !important;
-            flex-direction: row !important;
-            align-items: center !important;
-            justify-content: center !important;
-            flex-wrap: nowrap;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .hero-carousel .carousel-control-prev {
-            left: 1.5rem !important;
-            right: auto !important;
-        }
-        @media (min-width: 1024px) {
-            .hero-carousel .carousel-control-prev {
-                left: 2.5rem !important;
-            }
-        }
-        .hero-carousel .carousel-control-next {
-            right: 1.5rem !important;
-            left: auto !important;
-        }
-        @media (min-width: 1024px) {
-            .hero-carousel .carousel-control-next {
-                right: 2.5rem !important;
-            }
-        }
-        .hero-carousel .carousel-control-prev:hover,
-        .hero-carousel .carousel-control-next:hover {
-            opacity: 1;
-            transform: translateY(-50%) scale(1.08);
-        }
-        .hero-carousel .carousel-control-prev-icon,
-        .hero-carousel .carousel-control-next-icon {
-            display: block !important;
-            width: 3.25rem !important;
-            height: 3.25rem !important;
-            min-width: 3.25rem !important;
-            background-color: rgba(15, 23, 42, 0.75);
-            background-size: 1.25rem 1.25rem;
-            border-radius: 9999px;
-            padding: 0.75rem;
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(16, 185, 129, 0.35);
-            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 15px -2px rgba(16, 185, 129, 0.2);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .hero-carousel .carousel-control-prev:hover .carousel-control-prev-icon,
-        .hero-carousel .carousel-control-next:hover .carousel-control-next-icon {
-            background-color: rgba(16, 185, 129, 0.25);
-            border-color: rgba(16, 185, 129, 0.85);
-            box-shadow: 0 8px 25px -2px rgba(0, 0, 0, 0.6), 0 0 24px 3px rgba(16, 185, 129, 0.45);
-        }
-        .hero-carousel .visually-hidden {
-            position: absolute !important;
-            width: 1px !important;
-            height: 1px !important;
-            padding: 0 !important;
-            margin: -1px !important;
-            overflow: hidden !important;
-            clip: rect(0, 0, 0, 0) !important;
-            white-space: nowrap !important;
-            border: 0 !important;
-        }
-
-        /* indicadores */
-        .hero-carousel .carousel-indicators [data-bs-target] {
-            width: 2.5rem;
-            height: 4px;
-            border-radius: 9999px;
-            background-color: rgba(255,255,255,0.35);
-            border: none;
-            opacity: 0.5;
-            transition: opacity 0.3s, background-color 0.3s, width 0.3s;
-        }
-        .hero-carousel .carousel-indicators [data-bs-target].active {
-            opacity: 1;
-            background-color: #06b6d4;
-            width: 3.5rem;
-        }
-        .hero-carousel .carousel-indicators {
-            bottom: 1.5rem;
-        }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        .hero-gradient { background: linear-gradient(135deg, #0D1117 0%, #1a1f3a 50%, #0f3460 100%); }
+        .feature-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .feature-card:hover { transform: translateY(-6px); box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
     </style>
 </head>
 
-<body class="bg-slate-950 text-slate-200 antialiased">
+<body class="bg-slate-950 text-white antialiased">
 
-    <!-- ===== Barra de navegación ===== -->
-    <header class="sticky top-0 z-40 border-b border-slate-800/70 bg-slate-950/80 backdrop-blur">
-        <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-            <a href="#inicio" class="flex items-center gap-3">
-                <div
-                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-500 text-lg font-black text-slate-900">
-                    GH</div>
-                <span class="text-xl font-bold text-white">Growth Horizon</span>
-            </a>
-
-            <div class="hidden items-center gap-8 text-sm font-medium text-slate-300 md:flex">
-                <a href="#beneficios" class="relative transition hover:text-white after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-cyan-400 after:transition-all after:duration-300 hover:after:w-full">Beneficios</a>
-                <a href="#sectores" class="relative transition hover:text-white after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-cyan-400 after:transition-all after:duration-300 hover:after:w-full">Sectores</a>
-                <a href="#analisis" class="relative transition hover:text-white after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-cyan-400 after:transition-all after:duration-300 hover:after:w-full">Análisis</a>
-                <a href="#simulador" class="relative transition hover:text-white after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-cyan-400 after:transition-all after:duration-300 hover:after:w-full">Simulador</a>
-                <a href="#contacto" class="relative transition hover:text-white after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-cyan-400 after:transition-all after:duration-300 hover:after:w-full">Contacto</a>
-            </div>
-
+    <nav class="fixed top-0 inset-x-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                {% if current_user.is_authenticated %}
-                <a href="{{ url_for('main.dashboard') }}"
-                    class="btn-primary px-4 py-2 text-sm font-medium rounded-lg bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-900">
-                    Ir al panel
-                </a>
-                <a href="{{ url_for('auth.logout') }}"
-                    class="btn-outline px-4 py-2 text-sm font-medium rounded-lg">Salir</a>
-                {% else %}
-                <a href="{{ url_for('auth.login') }}"
-                    class="btn-outline px-4 py-2 text-sm font-medium rounded-lg">Iniciar sesión</a>
-                <a href="{{ url_for('auth.registro') }}"
-                    class="btn-primary px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-900">
-                    Crear cuenta de empresa
-                </a>
-                {% endif %}
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-500 flex items-center justify-center text-sm font-black text-slate-900">GH</div>
+                <span class="text-lg font-bold text-white">Growth Horizon</span>
             </div>
-        </nav>
-    </header>
-
-    <!-- ===== Hero: Carrusel Bootstrap ===== -->
-    <section id="inicio" class="hero-carousel">
-        <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
-
-            <!-- Indicadores -->
-            <div class="carousel-indicators">
-                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
-                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
-            </div>
-
-            <!-- Slides -->
-            <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&q=80" alt="Equipo colaborando en oficina moderna">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1920&q=80" alt="Análisis de datos en pantalla">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1920&q=80" alt="Tecnología e innovación empresarial">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1920&q=80" alt="Reunión de negocios estratégica">
-                </div>
-            </div>
-
-            <!-- Controles prev/next -->
-            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Anterior</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Siguiente</span>
-            </button>
-
-            <!-- Caption: contenido del hero superpuesto -->
-            <div class="carousel-caption">
-                <div class="mx-auto max-w-3xl">
-                    <span
-                        class="anim-hero-badge inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-800/60 px-4 py-1.5 text-xs font-medium text-cyan-300 backdrop-blur-sm">
-                        <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-                        Plataforma para gestionar y analizar tu empresa
-                    </span>
-                    <h1 class="anim-hero-title mt-6 text-4xl font-black leading-tight tracking-tight text-white md:text-6xl">
-                        Convierte los datos de tu empresa en
-                        <span class="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">decisiones
-                            de crecimiento</span>
-                    </h1>
-                    <p class="anim-hero-subtitle mx-auto mt-6 max-w-2xl text-base text-slate-300 md:text-lg">
-                        Agrupa tu negocio por tipo de industria, anota tus productos, horarios y ventas, y obtén
-                        reportes claros con la información más importante: qué productos se venden más y en qué horarios
-                        hay más clientes.
-                    </p>
-                    <div class="anim-hero-btns mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                        <a href="{{ url_for('auth.registro') }}"
-                            class="btn-primary w-full rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 px-7 py-4 text-center font-semibold text-slate-900 shadow-lg shadow-cyan-500/20 sm:w-auto">
-                            Registrar mi empresa gratis
-                        </a>
-                        <a href="{{ url_for('auth.login') }}"
-                            class="btn-outline w-full rounded-xl border border-slate-700 px-7 py-4 text-center font-medium text-white backdrop-blur-sm sm:w-auto">
-                            Acceder como empresa
-                        </a>
-                    </div>
-                    <p class="anim-hero-note mt-6 text-sm text-slate-400">Sin costo inicial · El primer usuario de cada empresa es el
-                        administrador</p>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Métricas destacadas (fuera del carrusel) -->
-        <div class="anim-hero-metrics mx-auto -mt-12 relative z-10 grid max-w-4xl grid-cols-2 gap-4 px-6 pb-10 md:grid-cols-4">
-            <div class="card-hover rounded-2xl border border-slate-800 bg-slate-900/80 p-5 text-center backdrop-blur">
-                <p class="text-2xl font-black text-white">100%</p>
-                <p class="mt-1 text-xs text-slate-500">Datos de tu empresa</p>
-            </div>
-            <div class="card-hover rounded-2xl border border-slate-800 bg-slate-900/80 p-5 text-center backdrop-blur">
-                <p class="text-2xl font-black text-white">{{ sectores | length }}</p>
-                <p class="mt-1 text-xs text-slate-500">Sectores económicos</p>
-            </div>
-            <div class="card-hover rounded-2xl border border-slate-800 bg-slate-900/80 p-5 text-center backdrop-blur">
-                <p class="text-2xl font-black text-white">24/7</p>
-                <p class="mt-1 text-xs text-slate-500">Registro y control total</p>
-            </div>
-            <div class="card-hover rounded-2xl border border-slate-800 bg-slate-900/80 p-5 text-center backdrop-blur">
-                <p class="text-2xl font-black text-white">Excel</p>
-                <p class="mt-1 text-xs text-slate-500">Reportes exportables</p>
+            <div class="flex items-center gap-4">
+                <a href="{{ url_for('auth.login') }}" class="text-sm text-slate-400 hover:text-white transition">Iniciar sesion</a>
+                <a href="{{ url_for('auth.registro') }}" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition">Registrarse</a>
             </div>
         </div>
-    </section>
+    </nav>
 
-    <!-- ===== Beneficios ===== -->
-    <section id="beneficios" class="border-t border-slate-800/60 bg-slate-900/30 py-24">
-        <div class="mx-auto max-w-7xl px-6">
-            <div class="reveal mx-auto max-w-2xl text-center">
-                <h2 class="text-3xl font-black text-white md:text-4xl">Todo lo que tu negocio necesita para crecer</h2>
-                <p class="mt-4 text-slate-400">Una plataforma completa que centraliza la operación y potencia el
-                    análisis de tu empresa.</p>
-            </div>
-
-            <div class="mt-14 grid gap-6 md:grid-cols-3">
-                <div
-                    class="reveal delay-1 card-hover rounded-2xl border border-slate-800 bg-slate-900/60 p-8 transition hover:border-cyan-500/40">
-                    <div
-                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/15 text-2xl text-cyan-300">
-                        📊</div>
-                    <h3 class="mt-5 text-lg font-bold text-white">Análisis claro</h3>
-                    <p class="mt-2 text-sm text-slate-400">Ve los productos que más se venden y cómo van tus ventas por
-                        horario con gráficos sencillos y actualizados.</p>
-                </div>
-                <div
-                    class="reveal delay-2 card-hover rounded-2xl border border-slate-800 bg-slate-900/60 p-8 transition hover:border-emerald-500/40">
-                    <div
-                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/15 text-2xl text-emerald-300">
-                        🗂️</div>
-                    <h3 class="mt-5 text-lg font-bold text-white">Organización por sectores</h3>
-                    <p class="mt-2 text-sm text-slate-400">Agrupa tus negocios por tipo de industria para tener una vista
-                        clara y útil del mercado.</p>
-                </div>
-                <div
-                    class="reveal delay-3 card-hover rounded-2xl border border-slate-800 bg-slate-900/60 p-8 transition hover:border-amber-500/40">
-                    <div
-                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/15 text-2xl text-amber-300">
-                        🛡️</div>
-                    <h3 class="mt-5 text-lg font-bold text-white">Auditoría y seguridad</h3>
-                    <p class="mt-2 text-sm text-slate-400">Cada entrada y cambio queda guardado con tu usuario, fecha y
-                        hora exactas. Cada empresa ve solo su propia información.</p>
-                </div>
-            </div>
-
-            <div class="mt-6 grid gap-6 md:grid-cols-3">
-                <div
-                    class="reveal delay-4 card-hover rounded-2xl border border-slate-800 bg-slate-900/60 p-8 transition hover:border-cyan-500/40">
-                    <div
-                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/15 text-2xl text-cyan-300">
-                        📦</div>
-                    <h3 class="mt-5 text-lg font-bold text-white">Gestión de productos</h3>
-                    <p class="mt-2 text-sm text-slate-400">Registra tu catálogo con precios y categorías, y controla el
-                        desempeño de cada producto.</p>
-                </div>
-                <div
-                    class="reveal delay-5 card-hover rounded-2xl border border-slate-800 bg-slate-900/60 p-8 transition hover:border-emerald-500/40">
-                    <div
-                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/15 text-2xl text-emerald-300">
-                        📥</div>
-                    <h3 class="mt-5 text-lg font-bold text-white">Reportes en Excel</h3>
-                    <p class="mt-2 text-sm text-slate-400">Descarga al instante reportes de ventas e inventario en
-                        formato Excel, listos para compartir con tu equipo.</p>
-                </div>
-                <div
-                    class="reveal delay-5 card-hover rounded-2xl border border-slate-800 bg-slate-900/60 p-8 transition hover:border-amber-500/40">
-                    <div
-                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/15 text-2xl text-amber-300">
-                        🕐</div>
-                    <h3 class="mt-5 text-lg font-bold text-white">Horarios inteligentes</h3>
-                    <p class="mt-2 text-sm text-slate-400">Define tus horarios de atención y junta esa información con
-                        tus ventas para ver los días y horas con más clientes.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ===== Sectores atendidos ===== -->
-    <section id="sectores" class="border-t border-slate-800/60 py-24">
-        <div class="mx-auto max-w-7xl px-6">
-            <div class="reveal mx-auto max-w-2xl text-center">
-                <h2 class="text-3xl font-black text-white md:text-4xl">Sectores económicos atendidos</h2>
-                <p class="mt-4 text-slate-400">Una solución de análisis diseñada para empresas de múltiples industrias.
+    <section class="hero-gradient min-h-screen flex items-center pt-20">
+        <div class="max-w-7xl mx-auto px-6 py-20">
+            <div class="max-w-3xl">
+                <p class="text-sm font-semibold text-emerald-400 tracking-wider uppercase mb-4">Diagnostico de madurez empresarial</p>
+                <h1 class="text-5xl sm:text-6xl font-black leading-tight mb-6">
+                    Mide el nivel de <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-500">madurez digital</span> de tu negocio
+                </h1>
+                <p class="text-xl text-slate-400 mb-8 max-w-2xl">
+                    Responde un cuestionario organizado por dimensiones, obtien un indice de madurez ponderado, compara tu empresa contra el promedio de tu sector y recibe recomendaciones personalizadas.
                 </p>
-            </div>
-
-            <div class="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-                {% if sectores %}
-                {% for sector in sectores %}
-                <div
-                    class="reveal card-hover flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-5 transition hover:border-slate-600">
-                    <span class="h-3 w-3 shrink-0 rounded-full" style="background-color: {{ sector.color }}"></span>
-                    <div>
-                        <p class="font-semibold text-white">{{ sector.nombre }}</p>
-                        <p class="text-xs text-slate-500">{{ sector.empresas.count() }} empresas</p>
-                    </div>
-                </div>
-                {% endfor %}
-                {% else %}
-                <div class="reveal col-span-full mx-auto flex flex-wrap items-center justify-center gap-4 text-slate-400">
-                    <p class="text-sm">Tecnología &middot; Manufactura &middot; Comercio &middot; Agroindustria &middot;
-                        Financiero</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </section>
-
-    <!-- ===== Análisis destacado ===== -->
-    <section id="analisis" class="border-t border-slate-800/60 bg-slate-900/30 py-24">
-        <div class="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2">
-            <div class="reveal-left">
-                <span class="text-xs font-semibold uppercase tracking-widest text-cyan-400">Análisis de tu empresa</span>
-                <h2 class="mt-4 text-3xl font-black text-white md:text-4xl">Toma decisiones con datos reales, no con
-                    suposiciones</h2>
-                <p class="mt-5 text-slate-400">
-                    Con la sección de Análisis podrás ver tus ventas y conocer cuánto dinero entra, el valor promedio
-                    de cada venta, qué productos se venden más y en qué horarios hay más clientes.
-                </p>
-
-                <ul class="mt-8 space-y-4">
-                    <li class="flex items-start gap-3">
-                        <span
-                            class="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">✓</span>
-                        <span class="text-sm text-slate-300">Cuánto dinero entra, cuánto vendes y el valor promedio de
-                            cada venta</span>
-                    </li>
-                    <li class="flex items-start gap-3">
-                        <span
-                            class="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">✓</span>
-                        <span class="text-sm text-slate-300">Los productos que más se venden, por cantidad y por
-                            dinero</span>
-                    </li>
-                    <li class="flex items-start gap-3">
-                        <span
-                            class="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">✓</span>
-                        <span class="text-sm text-slate-300">Los días y horas con más clientes, para organizar mejor tus
-                            turnos</span>
-                    </li>
-                    <li class="flex items-start gap-3">
-                        <span
-                            class="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">✓</span>
-                        <span class="text-sm text-slate-300">Gráficos claros y fáciles de leer</span>
-                    </li>
-                </ul>
-
-                <a href="{{ url_for('auth.registro') }}"
-                    class="btn-primary mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 px-6 py-3.5 font-semibold text-slate-900">
-                    Empieza a analizar tu negocio →
-                </a>
-            </div>
-
-            <div class="reveal-right rounded-3xl border border-slate-800 bg-slate-900/60 p-6">
-                <p class="mb-4 text-sm font-semibold text-white">Productos más vendidos</p>
-                <div class="space-y-3">
-                    <div>
-                        <div class="mb-1 flex justify-between text-sm"><span class="text-slate-300">Café
-                                especial</span><span class="text-emerald-400">24,5 u</span></div>
-                        <div class="h-2.5 rounded-full bg-slate-800">
-                            <div class="h-full w-4/5 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="mb-1 flex justify-between text-sm"><span class="text-slate-300">Café
-                                latte</span><span class="text-emerald-400">19,0 u</span></div>
-                        <div class="h-2.5 rounded-full bg-slate-800">
-                            <div class="h-full w-3/5 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="mb-1 flex justify-between text-sm"><span class="text-slate-300">Sándwich
-                                gourmet</span><span class="text-emerald-400">14,0 u</span></div>
-                        <div class="h-2.5 rounded-full bg-slate-800">
-                            <div class="h-full w-1/2 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-6 border-t border-slate-800 pt-5">
-                    <p class="mb-4 text-sm font-semibold text-white">Horas con mayor movimiento</p>
-                    <div class="flex items-end gap-2 h-24">
-                        <div class="flex-1 rounded-t bg-amber-500/60" style="height:40%"></div>
-                        <div class="flex-1 rounded-t bg-amber-500/60" style="height:55%"></div>
-                        <div class="flex-1 rounded-t bg-amber-500/60" style="height:70%"></div>
-                        <div class="flex-1 rounded-t bg-emerald-500" style="height:100%"></div>
-                        <div class="flex-1 rounded-t bg-amber-500/60" style="height:60%"></div>
-                        <div class="flex-1 rounded-t bg-amber-500/40" style="height:35%"></div>
-                    </div>
-                    <p class="mt-2 text-xs text-slate-500">08:00 &ndash; 13:00 &middot; momento de más clientes, a
-                        las 10:00</p>
+                <div class="flex flex-wrap gap-4">
+                    <a href="{{ url_for('auth.registro') }}" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-900 font-bold text-lg hover:opacity-90 transition">
+                        Empezar diagnostico
+                    </a>
+                    <a href="#como-funciona" class="px-8 py-3.5 rounded-xl border border-white/20 text-white font-semibold hover:bg-white/5 transition">
+                        Como funciona
+                    </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ===== Simulador de ganancias (COP) ===== -->
-    <section id="simulador" class="border-t border-slate-800/60 bg-slate-900/30 py-24">
-        <div class="mx-auto max-w-5xl px-6">
-            <div class="reveal mx-auto max-w-2xl text-center">
-                <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400">Calculadora sencilla</span>
-                <h2 class="mt-4 text-3xl font-black text-white md:text-4xl">¿Cuánto podrías ganar con tu negocio?</h2>
-                <p class="mt-4 text-slate-400">Mueve las barras de abajo según tu negocio y descubre, paso a paso,
-                    cuánto dinero podrías ganar al mes. No necesitas saber de matemáticas ni de computadores.</p>
-            </div>
-
-            <!-- Recuadro de ayuda -->
-            <div class="reveal mx-auto mt-8 max-w-2xl rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-4 text-center">
-                <p class="text-sm text-emerald-200">👉 <span class="font-semibold text-emerald-100">Mueve las barras</span>
-                    según tu negocio y calcula cuánto podrías ganar al mes. Los resultados se actualizan solos.</p>
-            </div>
-
-            <div class="reveal-scale mt-10 grid gap-6 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 md:grid-cols-2 md:p-8">
-                <!-- Controles -->
-                <div class="space-y-7">
-                    <div>
-                        <div class="flex items-center justify-between text-sm">
-                            <label for="sim-ventas" class="font-medium text-slate-200">Cantidad de ventas al mes</label>
-                            <span id="sim-ventas-val" class="font-semibold text-emerald-400">500</span>
-                        </div>
-                        <input id="sim-ventas" type="range" min="0" max="2000" step="10" value="500"
-                            class="mt-3 w-full accent-emerald-500">
-                        <p class="mt-1.5 text-xs text-slate-500">¿Cuántas ventas haces en un mes? Por ejemplo: 100
-                            clientes que te compran algo.</p>
-                    </div>
-
-                    <div>
-                        <div class="flex items-center justify-between text-sm">
-                            <label for="sim-ticket" class="font-medium text-slate-200">Valor promedio de cada venta (en pesos)</label>
-                            <span id="sim-ticket-val" class="font-semibold text-emerald-400">$35.000</span>
-                        </div>
-                        <input id="sim-ticket" type="range" min="1000" max="500000" step="1000" value="35000"
-                            class="mt-3 w-full accent-emerald-500">
-                        <p class="mt-1.5 text-xs text-slate-500">Cuánto dinero dejas en una venta normal. Por ejemplo:
-                            $35.000 por cada cliente.</p>
-                    </div>
-
-                    <div>
-                        <div class="flex items-center justify-between text-sm">
-                            <label for="sim-margen" class="font-medium text-slate-200">Lo que te queda de ganancia (%)</label>
-                            <span id="sim-margen-val" class="font-semibold text-emerald-400">30%</span>
-                        </div>
-                        <input id="sim-margen" type="range" min="0" max="100" step="1" value="30"
-                            class="mt-3 w-full accent-emerald-500">
-                        <p class="mt-1.5 text-xs text-slate-500">De cada venta, qué porcentaje es tu ganancia real
-                            después de pagar lo que te cuesta el producto.</p>
-                    </div>
+    <section id="como-funciona" class="py-24 bg-slate-900">
+        <div class="max-w-7xl mx-auto px-6">
+            <p class="text-sm font-semibold text-emerald-400 tracking-wider uppercase mb-3 text-center">Proceso</p>
+            <h2 class="text-4xl font-black text-center mb-16">4 pasos para diagnosticar tu madurez</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-2xl font-black text-cyan-400 mx-auto mb-4">1</div>
+                    <h3 class="text-lg font-bold mb-2">Responde</h3>
+                    <p class="text-sm text-slate-400">Completa el cuestionario organizado en 8 dimensiones de madurez empresarial.</p>
                 </div>
-
-                <!-- Resultados -->
-                <div class="flex flex-col justify-center gap-4 rounded-2xl border border-slate-800 bg-slate-950/60 p-6">
-                    <div class="rounded-xl bg-slate-900/80 p-4">
-                        <p class="text-xs uppercase tracking-wider text-slate-500">Dinero que entra al mes</p>
-                        <p id="sim-ingresos" class="mt-1 text-2xl font-black text-white">$17.500.000</p>
-                    </div>
-                    <div class="rounded-xl bg-gradient-to-r from-cyan-500/15 to-emerald-500/15 p-4">
-                        <p class="text-xs uppercase tracking-wider text-emerald-300">Lo que ganarías al mes</p>
-                        <p id="sim-ganancia" class="mt-1 text-3xl font-black text-emerald-400">$5.250.000</p>
-                    </div>
-                    <div class="rounded-xl bg-slate-900/80 p-4">
-                        <p class="text-xs uppercase tracking-wider text-slate-500">En un año (aproximado)</p>
-                        <p id="sim-anual" class="mt-1 text-lg font-bold text-slate-200">$63.000.000</p>
-                    </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-2xl font-black text-emerald-400 mx-auto mb-4">2</div>
+                    <h3 class="text-lg font-bold mb-2">Calcula</h3>
+                    <p class="text-sm text-slate-400">El sistema calcula un indice de madurez ponderado segun el peso de cada dimension.</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-2xl font-black text-indigo-400 mx-auto mb-4">3</div>
+                    <h3 class="text-lg font-bold mb-2">Compara</h3>
+                    <p class="text-sm text-slate-400">Compara tu resultado contra el promedio de tu sector y empresas de tamano similar.</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-2xl font-black text-amber-400 mx-auto mb-4">4</div>
+                    <h3 class="text-lg font-bold mb-2">Recomienda</h3>
+                    <p class="text-sm text-slate-400">Recibe recomendaciones priorizadas para mejorar tu nivel de madurez.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <script>
-        (function () {
-            var fmt = new Intl.NumberFormat('es-CO', {
-                style: 'currency', currency: 'COP', maximumFractionDigits: 0
-            });
-            var ventas = document.getElementById('sim-ventas');
-            var ticket = document.getElementById('sim-ticket');
-            var margen = document.getElementById('sim-margen');
-
-            function recalcular() {
-                var n = parseInt(ventas.value, 10);
-                var t = parseInt(ticket.value, 10);
-                var m = parseInt(margen.value, 10);
-
-                var ingresos = n * t;
-                var ganancia = Math.round(ingresos * (m / 100));
-
-                document.getElementById('sim-ventas-val').textContent = n.toLocaleString('es-CO');
-                document.getElementById('sim-ticket-val').textContent = fmt.format(t);
-                document.getElementById('sim-margen-val').textContent = m + '%';
-                document.getElementById('sim-ingresos').textContent = fmt.format(ingresos);
-                document.getElementById('sim-ganancia').textContent = fmt.format(ganancia);
-                document.getElementById('sim-anual').textContent = fmt.format(ganancia * 12);
-            }
-
-            [ventas, ticket, margen].forEach(function (el) {
-                el.addEventListener('input', recalcular);
-            });
-            recalcular();
-        })();
-    </script>
-
-    <!-- ===== CTA final ===== -->
-    <section class="border-t border-slate-800/60 py-20">
-        <div class="reveal mx-auto max-w-4xl px-6 text-center">
-            <h2 class="text-3xl font-black text-white md:text-4xl">¿Listo para impulsar el crecimiento de tu empresa?
-            </h2>
-            <p class="mt-4 text-slate-400">Crea tu cuenta, registra tus primeros datos y empieza a ver tu negocio con
-                claridad.</p>
-            <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <a href="{{ url_for('auth.registro') }}"
-                    class="btn-primary w-full rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 px-8 py-4 font-semibold text-slate-900 shadow-lg shadow-cyan-500/20 sm:w-auto">
-                    Crear cuenta de empresa
-                </a>
-                <a href="{{ url_for('auth.login') }}"
-                    class="btn-outline w-full rounded-xl border border-slate-700 px-8 py-4 font-medium sm:w-auto">
-                    Ya tengo cuenta &middot; Iniciar sesión
-                </a>
+    <section class="py-24 bg-slate-950">
+        <div class="max-w-7xl mx-auto px-6">
+            <p class="text-sm font-semibold text-emerald-400 tracking-wider uppercase mb-3 text-center">Dimensiones</p>
+            <h2 class="text-4xl font-black text-center mb-16">8 dimensiones de analisis</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="feature-card bg-slate-900 border border-white/5 rounded-2xl p-6">
+                    <div class="text-3xl mb-3">[$]</div>
+                    <h3 class="font-bold text-lg mb-2">Financiera</h3>
+                    <p class="text-sm text-slate-400">Salud financiera, control de ingresos y gastos, planificacion presupuestaria.</p>
+                </div>
+                <div class="feature-card bg-slate-900 border border-white/5 rounded-2xl p-6">
+                    <div class="text-3xl mb-3">[O]</div>
+                    <h3 class="font-bold text-lg mb-2">Operacion</h3>
+                    <p class="text-sm text-slate-400">Procesos internos, eficiencia operativa, control de inventario.</p>
+                </div>
+                <div class="feature-card bg-slate-900 border border-white/5 rounded-2xl p-6">
+                    <div class="text-3xl mb-3">[C]</div>
+                    <h3 class="font-bold text-lg mb-2">Clientes/Ventas</h3>
+                    <p class="text-sm text-slate-400">Gestion de clientes, estrategia comercial, canales de venta.</p>
+                </div>
+                <div class="feature-card bg-slate-900 border border-white/5 rounded-2xl p-6">
+                    <div class="text-3xl mb-3">[D]</div>
+                    <h3 class="font-bold text-lg mb-2">Digitalizacion</h3>
+                    <p class="text-sm text-slate-400">Uso de herramientas digitales, presencia online, transformacion digital.</p>
+                </div>
+                <div class="feature-card bg-slate-900 border border-white/5 rounded-2xl p-6">
+                    <div class="text-3xl mb-3">[DA]</div>
+                    <h3 class="font-bold text-lg mb-2">Datos</h3>
+                    <p class="text-sm text-slate-400">Gestion de datos, toma de decisiones basada en datos.</p>
+                </div>
+                <div class="feature-card bg-slate-900 border border-white/5 rounded-2xl p-6">
+                    <div class="text-3xl mb-3">[S]</div>
+                    <h3 class="font-bold text-lg mb-2">Seguridad</h3>
+                    <p class="text-sm text-slate-400">Proteccion de datos, ciberseguridad, respaldos.</p>
+                </div>
+                <div class="feature-card bg-slate-900 border border-white/5 rounded-2xl p-6">
+                    <div class="text-3xl mb-3">[A]</div>
+                    <h3 class="font-bold text-lg mb-2">Automatizacion</h3>
+                    <p class="text-sm text-slate-400">Automatizacion de procesos, uso de tecnologia para reducir tareas manuales.</p>
+                </div>
+                <div class="feature-card bg-slate-900 border border-white/5 rounded-2xl p-6">
+                    <div class="text-3xl mb-3">[AN]</div>
+                    <h3 class="font-bold text-lg mb-2">Analitica</h3>
+                    <p class="text-sm text-slate-400">Analisis de datos, metricas, reportes, inteligencia de negocio.</p>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- ===== Footer ===== -->
-    <footer id="contacto" class="border-t border-slate-800/70 bg-slate-900/40">
-        <div class="mx-auto max-w-7xl px-6 py-14">
-            <div class="grid gap-10 md:grid-cols-4">
-                <div class="md:col-span-2">
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-500 text-lg font-black text-slate-900">
-                            GH</div>
-                        <span class="text-lg font-bold text-white">Growth Horizon</span>
-                    </div>
-                    <p class="mt-4 max-w-sm text-sm text-slate-400">
-                        Plataforma que reúne tus productos, horarios y ventas en un solo lugar para ayudarte a
-                        entender tu negocio y tomar mejores decisiones.
-                    </p>
-                    <div class="mt-5 flex gap-3">
-                        <a href="#" aria-label="LinkedIn"
-                            class="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800 text-slate-300 transition hover:bg-slate-700">in</a>
-                        <a href="#" aria-label="X"
-                            class="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800 text-slate-300 transition hover:bg-slate-700">𝕏</a>
-                        <a href="#" aria-label="YouTube"
-                            class="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800 text-slate-300 transition hover:bg-slate-700">▶</a>
-                    </div>
+    <section class="py-24 bg-slate-900">
+        <div class="max-w-7xl mx-auto px-6">
+            <p class="text-sm font-semibold text-emerald-400 tracking-wider uppercase mb-3 text-center">Segmentacion</p>
+            <h2 class="text-4xl font-black text-center mb-16">3 niveles de madurez</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-slate-950 border border-white/5 rounded-2xl p-8 text-center">
+                    <div class="text-4xl font-black text-red-400 mb-2">0-39</div>
+                    <h3 class="text-xl font-bold mb-3">Inicial</h3>
+                    <p class="text-sm text-slate-400">La empresa esta en etapas tempranas de madurez digital. Procesos mayormente manuales, poca tecnologia.</p>
                 </div>
-
-                <div>
-                    <h4 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Plataforma</h4>
-                    <ul class="mt-4 space-y-3 text-sm">
-                        <li><a href="#inicio" class="text-slate-400 transition hover:text-white">Inicio</a></li>
-                        <li><a href="#beneficios" class="text-slate-400 transition hover:text-white">Beneficios</a></li>
-                        <li><a href="#sectores" class="text-slate-400 transition hover:text-white">Sectores</a></li>
-                        <li><a href="#analisis" class="text-slate-400 transition hover:text-white">Análisis</a></li>
-                    </ul>
+                <div class="bg-slate-950 border border-white/5 rounded-2xl p-8 text-center">
+                    <div class="text-4xl font-black text-amber-400 mb-2">40-69</div>
+                    <h3 class="text-xl font-bold mb-3">En Desarrollo</h3>
+                    <p class="text-sm text-slate-400">La empresa ha iniciado su transformacion digital con algunos procesos automatizados y herramientas implementadas.</p>
                 </div>
-
-                <div>
-                    <h4 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Acceso</h4>
-                    <ul class="mt-4 space-y-3 text-sm">
-                        <li><a href="{{ url_for('auth.login') }}"
-                                class="text-slate-400 transition hover:text-white">Iniciar sesión</a></li>
-                        <li><a href="{{ url_for('auth.registro') }}"
-                                class="text-slate-400 transition hover:text-white">Registro de empresa</a></li>
-                        <li><a href="{{ url_for('main.dashboard') }}"
-                                class="text-slate-400 transition hover:text-white">Panel interno</a></li>
-                    </ul>
+                <div class="bg-slate-950 border border-white/5 rounded-2xl p-8 text-center">
+                    <div class="text-4xl font-black text-emerald-400 mb-2">70-100</div>
+                    <h3 class="text-xl font-bold mb-3">Consolidado</h3>
+                    <p class="text-sm text-slate-400">La empresa tiene alto nivel de madurez digital con procesos optimizados, datos integrados y analitica avanzada.</p>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <div
-                class="mt-12 flex flex-col items-center justify-between gap-3 border-t border-slate-800 pt-6 text-xs text-slate-500 sm:flex-row">
-                <p>&copy; 2026 Growth Horizon. Todos los derechos reservados.</p>
-                <p>Flask &middot; SQLAlchemy &middot; Tailwind CSS &middot; Chart.js</p>
+    <section class="py-24 bg-slate-950">
+        <div class="max-w-3xl mx-auto px-6 text-center">
+            <h2 class="text-4xl font-black mb-6">Empieza a diagnosticar tu empresa hoy</h2>
+            <p class="text-lg text-slate-400 mb-8">En menos de 10 minutos conoceras el nivel de madurez digital de tu negocio y recibiras recomendaciones concretas para mejorar.</p>
+            <a href="{{ url_for('auth.registro') }}" class="inline-block px-10 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-900 font-bold text-lg hover:opacity-90 transition">
+                Crear cuenta gratis
+            </a>
+        </div>
+    </section>
+
+    <footer class="py-12 bg-slate-900 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-400 to-emerald-500 flex items-center justify-center text-xs font-black text-slate-900">GH</div>
+                <span class="text-sm font-bold text-white">Growth Horizon</span>
             </div>
+            <p class="text-xs text-slate-500">2026 Growth Horizon. Todos los derechos reservados.</p>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- ===== Scroll reveal animation ===== -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
-            if (!reveals.length) return;
-
-            var observer = new IntersectionObserver(function (entries) {
-                entries.forEach(function (entry) {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('revealed');
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.15 });
-
-            reveals.forEach(function (el) { observer.observe(el); });
-        });
-    </script>
-    <script src="{{ url_for('static', filename='ripple.js') }}"></script>
 </body>
-
 </html>

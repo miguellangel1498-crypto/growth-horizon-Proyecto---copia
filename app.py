@@ -18,10 +18,8 @@ def _migrar_esquema():
             db.session.execute(text("ALTER TABLE usuarios ADD COLUMN intentos_fallidos INTEGER NOT NULL DEFAULT 0"))
         if "ultimo_intento_fallido" not in columnas_usuario:
             db.session.execute(text("ALTER TABLE usuarios ADD COLUMN ultimo_intento_fallido DATETIME"))
-        # Migrar roles antiguos
         db.session.execute(text("UPDATE usuarios SET rol='superadmin' WHERE rol='admin'"))
         db.session.execute(text("UPDATE usuarios SET rol='empresa' WHERE rol='cliente'"))
-        # Migrar analistas: sin empresa -> bloquear; con empresa -> empleado
         db.session.execute(text("UPDATE usuarios SET rol='empleado' WHERE rol='analista' AND empresa_id IS NOT NULL"))
         db.session.execute(text("UPDATE usuarios SET activo=0 WHERE rol='analista' AND empresa_id IS NULL"))
         db.session.execute(text("UPDATE usuarios SET rol='empleado' WHERE rol='analista'"))
@@ -30,6 +28,8 @@ def _migrar_esquema():
         columnas_empresa = [c["name"] for c in insp.get_columns("empresas")]
         if "notas_admin" not in columnas_empresa:
             db.session.execute(text("ALTER TABLE empresas ADD COLUMN notas_admin TEXT"))
+        if "tamano_empresa" not in columnas_empresa:
+            db.session.execute(text("ALTER TABLE empresas ADD COLUMN tamano_empresa VARCHAR(20) NOT NULL DEFAULT 'PEQUENA'"))
 
     db.session.commit()
 
@@ -82,6 +82,8 @@ def crear_app(config_class=Config):
     from routes.analisis import analisis_bp
     from routes.auth import auth_bp
     from routes.cliente import cliente_bp
+    from routes.diagnostico import diagnostico_bp
+    from routes.diagnostico_admin import diagnostico_admin_bp
     from routes.empleado import empleado_bp
     from routes.empresas import empresas_bp
     from routes.main import main_bp
@@ -98,8 +100,9 @@ def crear_app(config_class=Config):
     app.register_blueprint(empleado_bp)
     app.register_blueprint(analisis_bp)
     app.register_blueprint(superadmin_bp)
+    app.register_blueprint(diagnostico_bp)
+    app.register_blueprint(diagnostico_admin_bp)
 
-    # ── Headers anti-caché para rutas protegidas ──────────────
     @app.after_request
     def _no_cache_protected(response):
         from flask_login import current_user
@@ -123,7 +126,7 @@ def crear_app(config_class=Config):
 
     @app.cli.command("seed")
     def seed():
-        from models import Configuracion, HorarioAtencion, Producto, Venta
+        from models import Configuracion, Dimension, IndiceMadurez, Indicador, Recomendacion, RespuestaDiagnostico, Segmento
         from models.roles import (
             ESTADO_EMPRESA_ACTIVO,
             ROL_EMPRESA,
@@ -138,7 +141,7 @@ def crear_app(config_class=Config):
             Configuracion.poner("requiere_aprobacion_empresa", "on",
                                 "Las empresas que se registran quedan pendientes de aprobación del superadministrador.")
             Configuracion.poner("permitir_registro_personas", "on",
-                                "Permite que usuarios particulares (analistas) se registren.")
+                                "Permite que usuarios particulares se registren.")
             db.session.commit()
             print("Configuración global de permisos creada.")
 
@@ -162,79 +165,252 @@ def crear_app(config_class=Config):
             db.session.commit()
             print("Superadministrador creado: admin@growthhorizon.com / Admin123!")
 
-            if Empresa.query.count() == 0:
-                tecnologia = Sector.query.filter_by(nombre="Tecnología").first()
-                db.session.add_all(
-                    [
-                        Empresa(nombre="Innovatech Solutions", ruc="20100011112", sector=tecnologia,
-                                actividad="Desarrollo de software a medida", estado="activo"),
-                        Empresa(nombre="NubeAndina S.A.C.", ruc="20100022223", sector=tecnologia,
-                                actividad="Servicios de infraestructura cloud", estado="activo"),
-                    ]
-                )
-                db.session.commit()
-                print("Empresas de ejemplo creadas.")
-
-            from datetime import datetime, timedelta
-
-            empresa_demo = Empresa.query.filter_by(ruc="20555500001").first()
-            if empresa_demo is None:
-                comercio = Sector.query.filter_by(nombre="Comercio").first()
-                empresa_demo = Empresa(
-                    nombre="Café Horizonte S.A.C.",
-                    ruc="20555500001",
-                    sector=comercio,
-                    actividad="Cafetería y productos gourmet",
-                    estado="activo",
-                )
-                db.session.add(empresa_demo)
-                db.session.commit()
-
-        cliente = Usuario.query.filter_by(email="cliente@growthhorizon.com").first()
-        if cliente is None:
-            cliente = Usuario(nombre="María López", email="cliente@growthhorizon.com", rol=ROL_EMPRESA, empresa=empresa_demo)
-            cliente.set_password("Cliente123!")
-            db.session.add(cliente)
-            db.session.commit()
-            print("Administrador de empresa creado: cliente@growthhorizon.com / Cliente123!")
-
-        if Producto.query.filter_by(empresa_id=empresa_demo.id).count() > 0:
-            print("Datos demo de la empresa ya cargados.")
-        else:
-            datos_productos = [
-                ("Café especial 500g", "Bebidas", 24.50),
-                ("Café latte", "Bebidas", 12.00),
-                ("Sándwich gourmet", "Alimentos", 18.90),
-                ("Cheesecake", "Postres", 15.50),
-                ("Jugo natural 1L", "Bebidas", 16.00),
-                ("Té de hierbas", "Bebidas", 8.50),
+        if Dimension.query.count() == 0:
+            dimensiones_datos = [
+                ("Financiera", "Salud financiera, control de ingresos y gastos, planificación presupuestaria", 1.0),
+                ("Operación", "Procesos internos, eficiencia operativa, control de inventario", 1.0),
+                ("Clientes/Ventas", "Gestión de clientes, estrategia comercial, canales de venta", 1.0),
+                ("Digitalización", "Uso de herramientas digitales, presencia online, transformación digital", 1.2),
+                ("Datos", "Gestión de datos, toma de decisiones basada en datos", 1.0),
+                ("Seguridad", "Protección de datos, ciberseguridad, respaldos", 0.8),
+                ("Automatización", "Automatización de procesos, uso de tecnología para reducir tareas manuales", 1.0),
+                ("Analítica", "Análisis de datos, métricas, reportes, inteligencia de negocio", 1.0),
             ]
-            for nombre, categoria, precio in datos_productos:
-                db.session.add(Producto(empresa_id=empresa_demo.id, nombre=nombre, categoria=categoria, precio=precio))
+            dims_creadas = {}
+            for nombre, desc, peso in dimensiones_datos:
+                d = Dimension(nombre=nombre, descripcion=desc, peso=peso)
+                db.session.add(d)
+                db.session.flush()
+                dims_creadas[nombre] = d
+
+            indicadores_datos = [
+                ("Financiera", "¿Llevas un registro organizado de tus ingresos y gastos mensuales?", 1.0, "AUTOREPORTADO"),
+                ("Financiera", "¿Cuál fue tu ingreso aproximado el último mes (en pesos)?", 1.0, "AUTOREPORTADO"),
+                ("Financiera", "¿Cuentas con un presupuesto mensual definido?", 1.0, "AUTOREPORTADO"),
+                ("Financiera", "Promedio de respuestas financieras AUTOREPORTADO", 0.5, "CALCULADO"),
+                ("Operación", "¿Llevas un control organizado de tu inventario?", 1.0, "AUTOREPORTADO"),
+                ("Operación", "¿Tus procesos principales están documentados o estandarizados?", 1.0, "AUTOREPORTADO"),
+                ("Operación", "¿Qué porcentaje de tus ingresos proviene de canales digitales?", 1.0, "AUTOREPORTADO"),
+                ("Operación", "Indicador de madurez operativa calculado", 0.5, "CALCULADO"),
+                ("Clientes/Ventas", "¿Tienes una base de datos de tus clientes?", 1.0, "AUTOREPORTADO"),
+                ("Clientes/Ventas", "¿Utilizas alguna herramienta para gestionar clientes (CRM)?", 1.0, "AUTOREPORTADO"),
+                ("Clientes/Ventas", "¿Mides la satisfacción de tus clientes?", 1.0, "AUTOREPORTADO"),
+                ("Digitalización", "¿Tu negocio tiene presencia online (página web, redes sociales)?", 1.2, "AUTOREPORTADO"),
+                ("Digitalización", "¿Utilizas herramientas digitales para gestionar tu negocio?", 1.2, "AUTOREPORTADO"),
+                ("Digitalización", "¿Vendes o promocionas tus productos/servicios por internet?", 1.0, "AUTOREPORTADO"),
+                ("Datos", "¿Generas reportes periódicos de tu negocio?", 1.0, "AUTOREPORTADO"),
+                ("Datos", "¿Tomas decisiones de negocio basadas en datos o estadísticas?", 1.0, "AUTOREPORTADO"),
+                ("Datos", "Calidad de datos basada en completitud de respuestas", 0.5, "CALCULADO"),
+                ("Seguridad", "¿Cuentas con respaldos (backups) de tu información?", 1.0, "AUTOREPORTADO"),
+                ("Seguridad", "¿Tus empleados conocen buenas prácticas de seguridad digital?", 1.0, "AUTOREPORTADO"),
+                ("Automatización", "¿Utilizas software para tareas repetitivas (contabilidad, inventario)?", 1.0, "AUTOREPORTADO"),
+                ("Automatización", "¿Algunos de tus procesos se ejecutan automáticamente?", 1.0, "AUTOREPORTADO"),
+                ("Analítica", "¿Revisas métricas o indicadores de tu negocio regularmente?", 1.0, "AUTOREPORTADO"),
+                ("Analítica", "¿Utilizas herramientas de análisis (Excel avanzado, BI, dashboards)?", 1.0, "AUTOREPORTADO"),
+                ("Analítica", "Tendencia de mejora basada en histórico de índices", 0.5, "CALCULADO"),
+            ]
+
+            for dim_nombre, texto, peso, tipo in indicadores_datos:
+                dim = dims_creadas.get(dim_nombre)
+                if dim:
+                    ind = Indicador(dimension_id=dim.id, texto=texto, peso=peso, tipo_medicion=tipo)
+                    db.session.add(ind)
+
+            db.session.commit()
+            print("Dimensiones e indicadores creados.")
+
+        if Segmento.query.count() == 0:
+            db.session.add_all([
+                Segmento(nombre="Inicial", rango_min=0, rango_max=39,
+                         descripcion="La empresa está en etapas tempranas de madurez digital. Procesos mayormente manuales, poca tecnología."),
+                Segmento(nombre="En Desarrollo", rango_min=40, rango_max=69,
+                         descripcion="La empresa ha iniciado su transformación digital con algunos procesos automatizados y herramientas implementadas."),
+                Segmento(nombre="Consolidado", rango_min=70, rango_max=100,
+                         descripcion="La empresa tiene alto nivel de madurez digital con procesos optimizados, datos integrados y analítica avanzada."),
+            ])
+            db.session.commit()
+            print("Segmentos creados.")
+
+        if Recomendacion.query.count() == 0:
+            from models import Dimension as DimModel
+
+            dims_recs = DimModel.query.all()
+            dim_ids = {d.nombre: d.id for d in dims_recs}
+
+            recomendaciones_datos = [
+                ("Financiera", 0, 39, "Implementa un sistema básico de registro de ingresos y gastos. Usa una hoja de cálculo para empezar.", "ALTA"),
+                ("Financiera", 40, 69, "Define un presupuesto mensual y compáralo con tus resultados reales cada mes.", "MEDIA"),
+                ("Financiera", 70, 100, "Considera software contable avanzado y proyecciones financieras trimestrales.", "BAJA"),
+                ("Operación", 0, 39, "Documenta tus procesos principales y crea un inventario básico de productos.", "ALTA"),
+                ("Operación", 40, 69, "Implementa herramientas de gestión de inventario y estandariza tus flujos de trabajo.", "MEDIA"),
+                ("Operación", 70, 100, "Automatiza procesos repetitivos e integra sistemas para eficiencia óptima.", "BAJA"),
+                ("Clientes/Ventas", 0, 39, "Crea una lista de clientes con datos de contacto y empieza a registrar interacciones.", "ALTA"),
+                ("Clientes/Ventas", 40, 69, "Implementa un CRM básico y mide satisfacción del cliente periódicamente.", "MEDIA"),
+                ("Clientes/Ventas", 70, 100, "Usa segmentación avanzada de clientes y automatiza campañas de marketing.", "BAJA"),
+                ("Digitalización", 0, 39, "Crea perfiles en redes sociales y considera una página web básica.", "ALTA"),
+                ("Digitalización", 40, 69, "Integra herramientas digitales para gestión interna y presencia online.", "MEDIA"),
+                ("Digitalización", 70, 100, "Optimiza tu ecosistema digital con omnicanalidad y transformación avanzada.", "BAJA"),
+                ("Datos", 0, 39, "Empieza a registrar datos clave del negocio en hojas de cálculo.", "ALTA"),
+                ("Datos", 40, 69, "Crea dashboards básicos y reportes mensuales con métricas importantes.", "MEDIA"),
+                ("Datos", 70, 100, "Implementa analítica predictiva y toma de decisiones basada en datos.", "BAJA"),
+                ("Seguridad", 0, 39, "Configura respaldos automáticos y crea contraseñas seguras.", "ALTA"),
+                ("Seguridad", 40, 69, "Capacita a tu equipo en seguridad digital y implementa políticas básicas.", "MEDIA"),
+                ("Seguridad", 70, 100, "Audita regularmente tu seguridad y cumple con normativas de protección de datos.", "BAJA"),
+                ("Automatización", 0, 39, "Identifica tareas repetitivas que puedan automatizarse con herramientas simples.", "ALTA"),
+                ("Automatización", 40, 69, "Implementa software especializado para automatizar procesos clave.", "MEDIA"),
+                ("Automatización", 70, 100, "Integra sistemas y crea flujos de trabajo automatizados complejos.", "BAJA"),
+                ("Analítica", 0, 39, "Define 3-5 métricas clave y revísalas semanalmente.", "ALTA"),
+                ("Analítica", 40, 69, "Implementa herramientas de visualización y reportes automatizados.", "MEDIA"),
+                ("Analítica", 70, 100, "Usa inteligencia de negocio y analítica predictiva para estrategia.", "BAJA"),
+            ]
+
+            for dim_nombre, r_min, r_max, texto, prioridad in recomendaciones_datos:
+                dim_id = dim_ids.get(dim_nombre)
+                if dim_id:
+                    db.session.add(Recomendacion(
+                        dimension_id=dim_id, rango_min=r_min, rango_max=r_max,
+                        texto=texto, prioridad=prioridad,
+                    ))
+
+            db.session.commit()
+            print("Recomendaciones creadas.")
+
+        if Empresa.query.filter_by(ruc="20555500001").first() is None:
+            comercio = Sector.query.filter_by(nombre="Comercio").first()
+            tecnologia = Sector.query.filter_by(nombre="Tecnología").first()
+
+            empresa_micro = Empresa(
+                nombre="Café Horizonte S.A.C.",
+                ruc="20555500001",
+                sector=comercio,
+                actividad="Cafetería y productos gourmet",
+                estado="activo",
+                tamano_empresa="MICRO",
+            )
+            empresa_mediana = Empresa(
+                nombre="Innovatech Solutions",
+                ruc="20100011112",
+                sector=tecnologia,
+                actividad="Desarrollo de software a medida",
+                estado="activo",
+                tamano_empresa="MEDIANA",
+            )
+            db.session.add_all([empresa_micro, empresa_mediana])
             db.session.commit()
 
-            dias = [("Lunes", 0), ("Martes", 1), ("Miércoles", 2), ("Jueves", 3), ("Viernes", 4), ("Sábado", 5)]
-            for nombre, numero in dias[:5]:
-                db.session.add(HorarioAtencion(empresa_id=empresa_demo.id, dia=nombre, dia_numero=numero, apertura="08:00", cierre="17:00"))
-            db.session.add(HorarioAtencion(empresa_id=empresa_demo.id, dia="Sábado", dia_numero=5, apertura="09:00", cierre="13:00"))
+            if Usuario.query.filter_by(email="admin@cafehorizonte.com").first() is None:
+                admin_micro = Usuario(
+                    nombre="María López",
+                    email="admin@cafehorizonte.com",
+                    rol=ROL_EMPRESA,
+                    empresa=empresa_micro,
+                )
+                admin_micro.set_password("Cliente123!")
+                db.session.add(admin_micro)
+
+            if Usuario.query.filter_by(email="admin@innovatech.com").first() is None:
+                admin_med = Usuario(
+                    nombre="Carlos Ruiz",
+                    email="admin@innovatech.com",
+                    rol=ROL_EMPRESA,
+                    empresa=empresa_mediana,
+                )
+                admin_med.set_password("Cliente123!")
+                db.session.add(admin_med)
+
+            db.session.commit()
+            print("Empresas demo creadas.")
+
+            from datetime import datetime
+
+            ind_autoreportados = Indicador.query.filter_by(tipo_medicion="AUTOREPORTADO").all()
+
+            respuestas_micro = {
+                "¿Llevas un registro organizado de tus ingresos y gastos mensuales?": 25,
+                "¿Cuál fue tu ingreso aproximado el último mes (en pesos)?": 20,
+                "¿Cuentas con un presupuesto mensual definido?": 15,
+                "¿Llevas un control organizado de tu inventario?": 30,
+                "¿Tus procesos principales están documentados o estandarizados?": 10,
+                "¿Qué porcentaje de tus ingresos proviene de canales digitales?": 15,
+                "¿Tienes una base de datos de tus clientes?": 10,
+                "¿Utilizas alguna herramienta para gestionar clientes (CRM)?": 5,
+                "¿Mides la satisfacción de tus clientes?": 10,
+                "¿Tu negocio tiene presencia online (página web, redes sociales)?": 35,
+                "¿Utilizas herramientas digitales para gestionar tu negocio?": 20,
+                "¿Vendes o promocionas tus productos/servicios por internet?": 15,
+                "¿Generas reportes periódicos de tu negocio?": 10,
+                "¿Tomas decisiones de negocio basadas en datos o estadísticas?": 5,
+                "¿Cuentas con respaldos (backups) de tu información?": 20,
+                "¿Tus empleados conocen buenas prácticas de seguridad digital?": 15,
+                "¿Utilizas software para tareas repetitivas (contabilidad, inventario)?": 10,
+                "¿Algunos de tus procesos se ejecutan automáticamente?": 5,
+                "¿Revisas métricas o indicadores de tu negocio regularmente?": 15,
+                "¿Utilizas herramientas de análisis (Excel avanzado, BI, dashboards)?": 10,
+            }
+
+            respuestas_mediana = {
+                "¿Llevas un registro organizado de tus ingresos y gastos mensuales?": 80,
+                "¿Cuál fue tu ingreso aproximado el último mes (en pesos)?": 75,
+                "¿Cuentas con un presupuesto mensual definido?": 70,
+                "¿Llevas un control organizado de tu inventario?": 65,
+                "¿Tus procesos principales están documentados o estandarizados?": 60,
+                "¿Qué porcentaje de tus ingresos proviene de canales digitales?": 85,
+                "¿Tienes una base de datos de tus clientes?": 75,
+                "¿Utilizas alguna herramienta para gestionar clientes (CRM)?": 70,
+                "¿Mides la satisfacción de tus clientes?": 55,
+                "¿Tu negocio tiene presencia online (página web, redes sociales)?": 90,
+                "¿Utilizas herramientas digitales para gestionar tu negocio?": 80,
+                "¿Vendes o promocionas tus productos/servicios por internet?": 75,
+                "¿Generas reportes periódicos de tu negocio?": 70,
+                "¿Tomas decisiones de negocio basadas en datos o estadísticas?": 65,
+                "¿Cuentas con respaldos (backups) de tu información?": 85,
+                "¿Tus empleados conocen buenas prácticas de seguridad digital?": 60,
+                "¿Utilizas software para tareas repetitivas (contabilidad, inventario)?": 70,
+                "¿Algunos de tus procesos se ejecutan automáticamente?": 55,
+                "¿Revisas métricas o indicadores de tu negocio regularmente?": 75,
+                "¿Utilizas herramientas de análisis (Excel avanzado, BI, dashboards)?": 65,
+            }
+
+            for ind in ind_autoreportados:
+                texto = ind.texto
+                if texto in respuestas_micro:
+                    db.session.add(RespuestaDiagnostico(
+                        empresa_id=empresa_micro.id, indicador_id=ind.id,
+                        valor=respuestas_micro[texto], fecha=datetime.utcnow(),
+                    ))
+                if texto in respuestas_mediana:
+                    db.session.add(RespuestaDiagnostico(
+                        empresa_id=empresa_mediana.id, indicador_id=ind.id,
+                        valor=respuestas_mediana[texto], fecha=datetime.utcnow(),
+                    ))
+
             db.session.commit()
 
-            productos = Producto.query.filter_by(empresa_id=empresa_demo.id).all()
-            import random
+            def _calcular_y_guardar(empresa_id, respuestas_map):
+                respuestas = RespuestaDiagnostico.query.filter_by(empresa_id=empresa_id).all()
+                ind_map = {r.indicador_id: r for r in respuestas}
+                indicadores = Indicador.query.filter(Indicador.id.in_(ind_map.keys())).all()
+                dim_map = {}
+                for ind in indicadores:
+                    if ind.dimension_id not in dim_map:
+                        dim_map[ind.dimension_id] = {"suma": 0, "peso_total": 0}
+                    dim_map[ind.dimension_id]["suma"] += float(ind_map[ind.id].valor) * float(ind.peso)
+                    dim_map[ind.dimension_id]["peso_total"] += float(ind.peso)
 
-            base = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
-            ventas = []
-            for i in range(35):
-                producto = random.choice(productos)
-                cantidad = random.randint(1, 4)
-                hora = random.randint(7, 19)
-                dia = random.randint(0, 5)
-                momento = base - timedelta(days=dia, hours=(24 - hora))
-                ventas.append(Venta(empresa_id=empresa_demo.id, producto_id=producto.id,
-                                    cantidad=cantidad, precio_unitario=producto.precio, fecha=momento))
-            db.session.add_all(ventas)
-            db.session.commit()
-            print("Café Horizonte listo con productos, horarios y 35 ventas demo.")
+                for dim_id, data in dim_map.items():
+                    if data["peso_total"] > 0:
+                        puntaje = round(data["suma"] / data["peso_total"], 2)
+                    else:
+                        puntaje = 0
+                    db.session.add(IndiceMadurez(
+                        empresa_id=empresa_id, dimension_id=dim_id,
+                        puntaje=puntaje, fecha=datetime.utcnow(),
+                    ))
+                db.session.commit()
+
+            _calcular_y_guardar(empresa_micro.id, respuestas_micro)
+            _calcular_y_guardar(empresa_mediana.id, respuestas_mediana)
+            print("Respuestas de diagnóstico e índices de madurez creados.")
 
         print("Datos semilla listos.")
 
