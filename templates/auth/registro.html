@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear cuenta &middot; Growth Horizon</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ripple.css') }}">
     <style>body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }</style>
 </head>
 <body class="h-full bg-slate-100 text-slate-800 antialiased">
@@ -160,5 +161,6 @@
             document.getElementById('campo-ruc-sector').classList.toggle('hidden', !mostrar);
         }
     </script>
+    <script src="{{ url_for('static', filename='ripple.js') }}"></script>
 </body>
 </html>

@@ -27,6 +27,7 @@
         }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ripple.css') }}" />
     <style>
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -212,7 +213,7 @@
                     {% endwith %}
                 </div>
 
-                {% block contenido %}{% endblock %}
+                {% block contenido %}{% block content %}{% endblock %}{% endblock %}
             </main>
         </div>
     </div>
@@ -237,6 +238,7 @@
             });
         });
     </script>
+    <script src="{{ url_for('static', filename='ripple.js') }}"></script>
 </body>
 
 </html>
