@@ -18,7 +18,12 @@ def _hora_label(hora):
 @analisis_bp.route("/")
 @login_required
 def principal():
+    # Solo superadmin y admin empresa tienen acceso al análisis de negocio
     if current_user.rol not in (ROL_SUPERADMIN, ROL_EMPRESA):
+        abort(403)
+    if current_user.rol == ROL_EMPRESA and not current_user.activo:
+        abort(403)
+    if current_user.rol == ROL_EMPRESA and current_user.empresa is not None and not current_user.acceso_empresa_activa:
         abort(403)
 
     empresa = current_user.empresa

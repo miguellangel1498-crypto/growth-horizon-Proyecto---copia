@@ -65,8 +65,8 @@ class Usuario(UserMixin, TimestampMixin, db.Model):
         return self.rol == ROL_EMPLEADO
 
     @property
-    def es_analista(self):
-        return self.rol == ROL_ANALISTA
+    def es_empleado_activo(self):
+        return self.rol == ROL_EMPLEADO and self.activo
 
     @property
     def es_admin(self):

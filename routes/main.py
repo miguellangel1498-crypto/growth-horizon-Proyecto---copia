@@ -3,6 +3,7 @@ from flask_login import current_user, login_required
 
 from extensions import db
 from models import Auditoria, Empresa, Sector
+from models.roles import ROL_EMPLEADO, ROL_EMPRESA, ROL_SUPERADMIN
 
 main_bp = Blueprint("main", __name__)
 
@@ -15,24 +16,21 @@ def index():
 @main_bp.route("/dashboard")
 @login_required
 def dashboard():
-    if current_user.es_empresa:
+    """
+    Enrutador central: redirige a cada usuario a su portal exclusivo según su rol.
+    - Superadmin  → /superadmin/
+    - Admin Empresa → /mi-empresa/
+    - Empleado    → /empleado/
+    """
+    if current_user.rol == ROL_SUPERADMIN:
+        return redirect(url_for("superadmin.panel"))
+
+    if current_user.rol == ROL_EMPRESA:
         return redirect(url_for("cliente.panel"))
 
-    total_empresas = Empresa.query.count()
-    total_sectores = Sector.query.count()
-    empresas_por_sector = (
-        db.session.query(Sector.nombre, db.func.count(Empresa.id))
-        .outerjoin(Empresa, Empresa.sector_id == Sector.id)
-        .group_by(Sector.id)
-        .order_by(db.func.count(Empresa.id).desc())
-        .all()
-    )
-    ultimas_auditorias = Auditoria.query.order_by(Auditoria.created_at.desc()).limit(5).all()
+    if current_user.rol == ROL_EMPLEADO:
+        return redirect(url_for("empleado.panel"))
 
-    return render_template(
-        "main/dashboard.html",
-        total_empresas=total_empresas,
-        total_sectores=total_sectores,
-        empresas_por_sector=empresas_por_sector,
-        ultimas_auditorias=ultimas_auditorias,
-    )
+    # Fallback: si el rol es desconocido, mostrar un 403 limpio
+    from flask import abort
+    abort(403)

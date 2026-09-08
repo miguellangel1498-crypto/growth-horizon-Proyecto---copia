@@ -1,0 +1,121 @@
+﻿{% extends 'base.html' %}
+{% block title %}Registrar Venta — {{ empresa.nombre }}{% endblock %}
+
+{% block content %}
+<div class="emp-page-header">
+  <div>
+    <h1 class="emp-page-title">💰 Registrar Venta</h1>
+    <p class="emp-page-sub">{{ empresa.nombre }}</p>
+  </div>
+  <a href="{{ url_for('empleado.panel') }}" class="emp-btn-back">← Volver al panel</a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for cat, msg in messages %}
+    <div class="emp-alert emp-alert--{{ cat }}">{{ msg }}</div>
+  {% endfor %}
+{% endwith %}
+
+<div class="emp-form-card">
+  <form method="post" class="emp-form" id="form-venta">
+    <div class="emp-form-group">
+      <label for="producto_id" class="emp-form-label">Producto</label>
+      <select name="producto_id" id="producto_id" class="emp-form-select" required>
+        <option value="">— Selecciona un producto —</option>
+        {% set presel = request.args.get('producto_id', '') %}
+        {% for p in productos %}
+        <option value="{{ p.id }}" data-precio="{{ p.precio }}" {% if presel == p.id|string %}selected{% endif %}>
+          {{ p.nombre }}{% if p.categoria %} ({{ p.categoria }}){% endif %} — {{ p.precio | moneda }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="emp-form-group">
+      <label for="cantidad" class="emp-form-label">Cantidad</label>
+      <div class="emp-cantidad-ctrl">
+        <button type="button" class="emp-cantidad-btn" id="btn-menos">−</button>
+        <input type="number" name="cantidad" id="cantidad" value="1" min="1" max="999" class="emp-form-input emp-form-input--center" required>
+        <button type="button" class="emp-cantidad-btn" id="btn-mas">+</button>
+      </div>
+    </div>
+
+    <div class="emp-form-group emp-precio-preview" id="preview-wrap" style="display:none">
+      <div class="emp-preview-card">
+        <div class="emp-preview-row">
+          <span>Precio unitario</span>
+          <span id="prev-unitario">—</span>
+        </div>
+        <div class="emp-preview-row emp-preview-row--total">
+          <span>Total estimado</span>
+          <span id="prev-total">—</span>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="emp-submit-btn" id="btn-submit">✅ Confirmar Venta</button>
+  </form>
+</div>
+
+<script>
+(function() {
+  const sel = document.getElementById('producto_id');
+  const cantInput = document.getElementById('cantidad');
+  const previewWrap = document.getElementById('preview-wrap');
+  const prevUnitario = document.getElementById('prev-unitario');
+  const prevTotal = document.getElementById('prev-total');
+  const btnMenos = document.getElementById('btn-menos');
+  const btnMas = document.getElementById('btn-mas');
+
+  function fmt(n) {
+    return '$ ' + parseFloat(n).toLocaleString('es-CO', {minimumFractionDigits: 2}) + ' COP';
+  }
+
+  function actualizar() {
+    const opt = sel.options[sel.selectedIndex];
+    const precio = parseFloat(opt ? opt.dataset.precio : 0) || 0;
+    const cant = parseInt(cantInput.value) || 1;
+    if (precio > 0) {
+      previewWrap.style.display = '';
+      prevUnitario.textContent = fmt(precio);
+      prevTotal.textContent = fmt(precio * cant);
+    } else {
+      previewWrap.style.display = 'none';
+    }
+  }
+
+  sel.addEventListener('change', actualizar);
+  cantInput.addEventListener('input', actualizar);
+  btnMenos.addEventListener('click', function() { if (parseInt(cantInput.value) > 1) { cantInput.value = parseInt(cantInput.value) - 1; actualizar(); } });
+  btnMas.addEventListener('click', function() { cantInput.value = parseInt(cantInput.value) + 1; actualizar(); });
+
+  if (sel.value) actualizar();
+})();
+</script>
+
+<style>
+.emp-page-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+.emp-page-title { font-size: 1.5rem; font-weight: 800; color: var(--text-primary, #f1f5f9); margin: 0; }
+.emp-page-sub { color: rgba(255,255,255,0.45); font-size: 0.88rem; margin: 0.2rem 0 0; }
+.emp-btn-back { background: rgba(99,102,241,0.12); color: #818cf8; border-radius: 10px; padding: 0.5rem 1.2rem; text-decoration: none; font-size: 0.88rem; font-weight: 600; }
+.emp-btn-back:hover { background: rgba(99,102,241,0.25); }
+.emp-alert { border-radius: 10px; padding: 0.8rem 1.2rem; margin-bottom: 1rem; font-size: 0.9rem; }
+.emp-alert--success { background: rgba(52,211,153,0.12); color: #34d399; border: 1px solid rgba(52,211,153,0.2); }
+.emp-alert--error { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+.emp-form-card { background: var(--surface, #1e2235); border: 1px solid rgba(255,255,255,0.07); border-radius: 18px; padding: 2rem; max-width: 560px; }
+.emp-form { display: flex; flex-direction: column; gap: 1.4rem; }
+.emp-form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.emp-form-label { font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.05em; }
+.emp-form-select, .emp-form-input { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.95rem; width: 100%; }
+.emp-form-select:focus, .emp-form-input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
+.emp-form-input--center { text-align: center; width: 80px; }
+.emp-cantidad-ctrl { display: flex; align-items: center; gap: 0.6rem; }
+.emp-cantidad-btn { width: 40px; height: 40px; background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); color: #818cf8; border-radius: 8px; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.emp-cantidad-btn:hover { background: rgba(99,102,241,0.3); }
+.emp-preview-card { background: rgba(52,211,153,0.07); border: 1px solid rgba(52,211,153,0.15); border-radius: 12px; padding: 1rem 1.3rem; }
+.emp-preview-row { display: flex; justify-content: space-between; color: rgba(255,255,255,0.6); font-size: 0.9rem; padding: 0.3rem 0; }
+.emp-preview-row--total { font-size: 1.1rem; font-weight: 800; color: #34d399; border-top: 1px solid rgba(52,211,153,0.2); margin-top: 0.4rem; padding-top: 0.6rem; }
+.emp-submit-btn { background: linear-gradient(135deg, #059669, #10b981); color: #fff; border: none; border-radius: 12px; padding: 0.9rem 2rem; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.15s; }
+.emp-submit-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+</style>
+{% endblock %}

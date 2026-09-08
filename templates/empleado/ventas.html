@@ -1,0 +1,101 @@
+﻿{% extends 'base.html' %}
+{% block title %}Ventas del Día — {{ empresa.nombre }}{% endblock %}
+
+{% block content %}
+<div class="emp-page-header">
+  <div>
+    <h1 class="emp-page-title">📋 Ventas del Día</h1>
+    <p class="emp-page-sub">{{ empresa.nombre }} — {{ hoy.strftime('%d/%m/%Y') }}</p>
+  </div>
+  <div style="display:flex;gap:.7rem;flex-wrap:wrap">
+    <a href="{{ url_for('empleado.ventas_nueva') }}" class="emp-btn-primary">+ Nueva Venta</a>
+    <a href="{{ url_for('empleado.panel') }}" class="emp-btn-back">← Panel</a>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for cat, msg in messages %}
+    <div class="emp-alert emp-alert--{{ cat }}">{{ msg }}</div>
+  {% endfor %}
+{% endwith %}
+
+{% if ventas %}
+<div class="emp-stat-row">
+  <div class="emp-mini-stat">
+    <div class="emp-mini-stat__val">{{ ventas|length }}</div>
+    <div class="emp-mini-stat__lbl">Ventas registradas</div>
+  </div>
+  <div class="emp-mini-stat">
+    <div class="emp-mini-stat__val">{{ ventas|sum(attribute='cantidad') }}</div>
+    <div class="emp-mini-stat__lbl">Unidades vendidas</div>
+  </div>
+</div>
+
+<div class="emp-tabla-card">
+  <div class="emp-tabla-wrap">
+    <table class="emp-tabla">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Producto</th>
+          <th>Categoría</th>
+          <th>Cantidad</th>
+          <th>Precio Unit.</th>
+          <th>Hora</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in ventas %}
+        <tr>
+          <td class="emp-td--muted">{{ v.id }}</td>
+          <td class="emp-td--nombre">{{ v.producto.nombre if v.producto else '—' }}</td>
+          <td class="emp-td--cat">{{ v.producto.categoria if v.producto else '—' }}</td>
+          <td><span class="emp-badge-cant">× {{ v.cantidad }}</span></td>
+          <td class="emp-td--precio">{{ v.precio_unitario | moneda }}</td>
+          <td class="emp-td--hora">{{ v.fecha.strftime('%H:%M') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="emp-empty">
+  <div class="emp-empty__icon">🛒</div>
+  <div class="emp-empty__msg">No hay ventas registradas hoy todavía.</div>
+  <a href="{{ url_for('empleado.ventas_nueva') }}" class="emp-btn-primary" style="margin-top:1.2rem;display:inline-block">Registrar primera venta</a>
+</div>
+{% endif %}
+
+<style>
+.emp-page-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+.emp-page-title { font-size: 1.5rem; font-weight: 800; color: var(--text-primary, #f1f5f9); margin: 0; }
+.emp-page-sub { color: rgba(255,255,255,0.45); font-size: 0.88rem; margin: 0.2rem 0 0; }
+.emp-btn-back { background: rgba(99,102,241,0.12); color: #818cf8; border-radius: 10px; padding: 0.5rem 1.2rem; text-decoration: none; font-size: 0.88rem; font-weight: 600; }
+.emp-btn-back:hover { background: rgba(99,102,241,0.25); }
+.emp-btn-primary { background: linear-gradient(135deg, #059669, #10b981); color: #fff; border-radius: 10px; padding: 0.5rem 1.3rem; text-decoration: none; font-size: 0.88rem; font-weight: 700; }
+.emp-alert { border-radius: 10px; padding: 0.8rem 1.2rem; margin-bottom: 1rem; font-size: 0.9rem; }
+.emp-alert--success { background: rgba(52,211,153,0.12); color: #34d399; border: 1px solid rgba(52,211,153,0.2); }
+.emp-alert--error { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+.emp-stat-row { display: flex; gap: 1rem; margin-bottom: 1.3rem; flex-wrap: wrap; }
+.emp-mini-stat { background: var(--surface, #1e2235); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 1rem 1.5rem; min-width: 150px; }
+.emp-mini-stat__val { font-size: 2rem; font-weight: 800; color: #818cf8; }
+.emp-mini-stat__lbl { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-top: 0.2rem; }
+.emp-tabla-card { background: var(--surface, #1e2235); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; overflow: hidden; }
+.emp-tabla-wrap { overflow-x: auto; }
+.emp-tabla { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.emp-tabla th { text-align: left; padding: 0.75rem 1.1rem; color: rgba(255,255,255,0.4); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.emp-tabla td { padding: 0.75rem 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.emp-tabla tr:last-child td { border-bottom: none; }
+.emp-tabla tr:hover td { background: rgba(255,255,255,0.02); }
+.emp-td--muted { color: rgba(255,255,255,0.25); font-size: 0.8rem; }
+.emp-td--nombre { color: var(--text-primary, #f1f5f9); font-weight: 600; }
+.emp-td--cat { color: rgba(255,255,255,0.4); font-size: 0.83rem; }
+.emp-td--precio { color: #34d399; font-family: monospace; font-size: 0.88rem; }
+.emp-td--hora { color: rgba(255,255,255,0.35); font-family: monospace; }
+.emp-badge-cant { background: rgba(99,102,241,0.18); color: #a5b4fc; border-radius: 999px; padding: 0.15rem 0.7rem; font-size: 0.82rem; font-weight: 700; }
+.emp-empty { text-align: center; padding: 4rem 2rem; color: rgba(255,255,255,0.3); }
+.emp-empty__icon { font-size: 3.5rem; margin-bottom: 1rem; }
+.emp-empty__msg { font-size: 1rem; }
+</style>
+{% endblock %}

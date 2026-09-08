@@ -4,14 +4,14 @@ from extensions import db
 ROL_SUPERADMIN = "superadmin"
 ROL_EMPRESA = "empresa"
 ROL_EMPLEADO = "empleado"
-ROL_ANALISTA = "analista"
+# Alias para compatibilidad con código antiguo que aún lo importe
+ROL_ANALISTA = "empleado"
 
 
 ROLES_DISPONIBLES = {
     ROL_SUPERADMIN: "Superadministrador",
     ROL_EMPRESA: "Administrador de Empresa",
-    ROL_EMPLEADO: "Empleado",
-    ROL_ANALISTA: "Analista",
+    ROL_EMPLEADO: "Empleado / Vendedor",
 }
 
 
@@ -34,98 +34,102 @@ MATRIZ_PERMISOS = [
         "superadmin": True,
         "empresa": False,
         "empleado": False,
-        "analista": True,
     },
     {
         "permiso": "Crear / editar / eliminar empresas",
         "superadmin": True,
         "empresa": False,
         "empleado": False,
-        "analista": False,
     },
     {
         "permiso": "Aprobar o suspender empresas",
         "superadmin": True,
         "empresa": False,
         "empleado": False,
-        "analista": False,
     },
     {
         "permiso": "Registro de auditoría global",
         "superadmin": True,
         "empresa": False,
         "empleado": False,
-        "analista": False,
     },
     {
         "permiso": "Gestionar sectores",
         "superadmin": True,
         "empresa": False,
         "empleado": False,
-        "analista": False,
     },
     {
         "permiso": "Panel de su propia empresa",
         "superadmin": False,
         "empresa": True,
-        "empleado": True,
-        "analista": False,
+        "empleado": False,
     },
     {
-        "permiso": "Administrar productos (crear/editar)",
+        "permiso": "Administrar productos (crear/editar/eliminar)",
         "superadmin": False,
         "empresa": True,
         "empleado": False,
-        "analista": False,
     },
     {
-        "permiso": "Consultar inventario (solo lectura)",
+        "permiso": "Consultar inventario y precios",
         "superadmin": False,
         "empresa": True,
         "empleado": True,
-        "analista": False,
+    },
+    {
+        "permiso": "Buscar productos",
+        "superadmin": False,
+        "empresa": True,
+        "empleado": True,
     },
     {
         "permiso": "Configuración y horarios",
         "superadmin": False,
         "empresa": True,
         "empleado": False,
-        "analista": False,
     },
     {
         "permiso": "Registrar ventas",
         "superadmin": False,
         "empresa": True,
         "empleado": True,
-        "analista": False,
+    },
+    {
+        "permiso": "Agregar inventario nuevo",
+        "superadmin": False,
+        "empresa": True,
+        "empleado": True,
     },
     {
         "permiso": "Reportes financieros (COP)",
         "superadmin": False,
         "empresa": True,
         "empleado": False,
-        "analista": False,
     },
     {
         "permiso": "Exportar reportes (Excel)",
         "superadmin": False,
         "empresa": True,
         "empleado": False,
-        "analista": False,
     },
     {
         "permiso": "Gestionar empleados",
         "superadmin": False,
         "empresa": True,
         "empleado": False,
-        "analista": False,
     },
     {
         "permiso": "Análisis de negocio",
         "superadmin": False,
         "empresa": True,
         "empleado": False,
-        "analista": False,
+    },
+    {
+        "permiso": "Auditoría de seguridad empresa",
+        "superadmin": False,
+        "empresa": True,
+        "empleado": False,
     },
 ]
 

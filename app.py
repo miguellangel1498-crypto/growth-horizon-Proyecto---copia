@@ -18,8 +18,13 @@ def _migrar_esquema():
             db.session.execute(text("ALTER TABLE usuarios ADD COLUMN intentos_fallidos INTEGER NOT NULL DEFAULT 0"))
         if "ultimo_intento_fallido" not in columnas_usuario:
             db.session.execute(text("ALTER TABLE usuarios ADD COLUMN ultimo_intento_fallido DATETIME"))
+        # Migrar roles antiguos
         db.session.execute(text("UPDATE usuarios SET rol='superadmin' WHERE rol='admin'"))
         db.session.execute(text("UPDATE usuarios SET rol='empresa' WHERE rol='cliente'"))
+        # Migrar analistas: sin empresa -> bloquear; con empresa -> empleado
+        db.session.execute(text("UPDATE usuarios SET rol='empleado' WHERE rol='analista' AND empresa_id IS NOT NULL"))
+        db.session.execute(text("UPDATE usuarios SET activo=0 WHERE rol='analista' AND empresa_id IS NULL"))
+        db.session.execute(text("UPDATE usuarios SET rol='empleado' WHERE rol='analista'"))
 
     if "empresas" in insp.get_table_names():
         columnas_empresa = [c["name"] for c in insp.get_columns("empresas")]
@@ -77,6 +82,7 @@ def crear_app(config_class=Config):
     from routes.analisis import analisis_bp
     from routes.auth import auth_bp
     from routes.cliente import cliente_bp
+    from routes.empleado import empleado_bp
     from routes.empresas import empresas_bp
     from routes.main import main_bp
     from routes.seguridad import seguridad_bp
@@ -89,6 +95,7 @@ def crear_app(config_class=Config):
     app.register_blueprint(sectores_bp)
     app.register_blueprint(seguridad_bp)
     app.register_blueprint(cliente_bp)
+    app.register_blueprint(empleado_bp)
     app.register_blueprint(analisis_bp)
     app.register_blueprint(superadmin_bp)
 

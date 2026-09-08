@@ -188,7 +188,25 @@ def registro():
             return redirect(url_for("main.index"))
 
         es_primero = Usuario.query.count() == 0
-        usuario = Usuario(nombre=nombre, email=email, rol=ROL_SUPERADMIN if es_primero else ROL_ANALISTA)
+        if not es_primero:
+            flash("El registro de cuentas individuales no está disponible. Los empleados son creados por el administrador de empresa.", "error")
+            sectores = Sector.query.order_by(Sector.nombre.asc()).all()
+            return render_template(
+                "auth/registro.html",
+                sectores=sectores,
+                tipo_cuenta=tipo_cuenta,
+                datos_empresa={
+                    "razon_social": razon_social,
+                    "ruc": ruc,
+                    "actividad": actividad,
+                    "correo_empresa": correo_empresa,
+                    "telefono": telefono,
+                    "direccion": direccion,
+                    "sitio_web": sitio_web,
+                },
+            )
+
+        usuario = Usuario(nombre=nombre, email=email, rol=ROL_SUPERADMIN)
         usuario.set_password(password)
         db.session.add(usuario)
         db.session.commit()
