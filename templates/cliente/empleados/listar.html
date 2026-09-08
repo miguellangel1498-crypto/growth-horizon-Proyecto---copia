@@ -42,8 +42,12 @@
                                 </button>
                             </form>
                             <form method="post" action="{{ url_for('cliente.empleados_eliminar', empleado_id=empleado.id) }}"
-                                  onsubmit="return confirm('¿Eliminar este empleado?')">
-                                <button class="px-3 py-1.5 rounded-lg border border-rose-200 text-rose-600 text-xs font-medium hover:bg-rose-50 transition">Eliminar</button>
+                                  onsubmit="return confirm('¿Eliminar este empleado?')" class="gh-delete-form">
+                                <button type="submit" class="gh-delete-btn-sm">
+                                    <svg class="gh-delete-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
                             </form>
                         </div>
                     </td>
