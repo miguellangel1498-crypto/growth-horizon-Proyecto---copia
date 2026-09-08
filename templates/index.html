@@ -215,32 +215,82 @@
             padding: 0 1.5rem;
         }
 
-        /* controles del carrusel */
+        /* controles del carrusel: posicionados a los lados con elegancia */
         .hero-carousel .carousel-control-prev,
         .hero-carousel .carousel-control-next {
-            z-index: 5;
-            width: 12%;
-            opacity: 0.7;
-            transition: opacity 0.3s;
+            position: absolute !important;
+            top: 50% !important;
+            bottom: auto !important;
+            transform: translateY(-50%);
+            z-index: 20;
+            width: 3.5rem !important;
+            height: 3.5rem !important;
+            max-height: 3.5rem !important;
+            padding: 0;
+            opacity: 0.85;
+            background: transparent !important;
+            border: none;
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-wrap: nowrap;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .hero-carousel .carousel-control-prev {
+            left: 1.5rem !important;
+            right: auto !important;
+        }
+        @media (min-width: 1024px) {
+            .hero-carousel .carousel-control-prev {
+                left: 2.5rem !important;
+            }
+        }
+        .hero-carousel .carousel-control-next {
+            right: 1.5rem !important;
+            left: auto !important;
+        }
+        @media (min-width: 1024px) {
+            .hero-carousel .carousel-control-next {
+                right: 2.5rem !important;
+            }
         }
         .hero-carousel .carousel-control-prev:hover,
         .hero-carousel .carousel-control-next:hover {
             opacity: 1;
+            transform: translateY(-50%) scale(1.08);
         }
         .hero-carousel .carousel-control-prev-icon,
         .hero-carousel .carousel-control-next-icon {
-            width: 2.5rem;
-            height: 2.5rem;
-            background-color: rgba(255,255,255,0.12);
-            border-radius: 50%;
-            padding: 0.5rem;
-            backdrop-filter: blur(4px);
-            transition: background-color 0.3s, transform 0.3s;
+            display: block !important;
+            width: 3.25rem !important;
+            height: 3.25rem !important;
+            min-width: 3.25rem !important;
+            background-color: rgba(15, 23, 42, 0.75);
+            background-size: 1.25rem 1.25rem;
+            border-radius: 9999px;
+            padding: 0.75rem;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 15px -2px rgba(16, 185, 129, 0.2);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .hero-carousel .carousel-control-prev:hover .carousel-control-prev-icon,
         .hero-carousel .carousel-control-next:hover .carousel-control-next-icon {
-            background-color: rgba(6, 182, 212, 0.35);
-            transform: scale(1.1);
+            background-color: rgba(16, 185, 129, 0.25);
+            border-color: rgba(16, 185, 129, 0.85);
+            box-shadow: 0 8px 25px -2px rgba(0, 0, 0, 0.6), 0 0 24px 3px rgba(16, 185, 129, 0.45);
+        }
+        .hero-carousel .visually-hidden {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
         }
 
         /* indicadores */
