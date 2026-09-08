@@ -457,3 +457,5 @@ werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'index'
 127.0.0.1 - - [01/Sep/2026 17:10:12] "POST /auth/login HTTP/1.1" 302 -
 127.0.0.1 - - [01/Sep/2026 17:10:12] "GET /dashboard HTTP/1.1" 200 -
 127.0.0.1 - - [01/Sep/2026 17:18:18] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [01/Sep/2026 17:20:39] "GET /auth/salir HTTP/1.1" 302 -
+127.0.0.1 - - [01/Sep/2026 17:20:39] "GET / HTTP/1.1" 200 -
