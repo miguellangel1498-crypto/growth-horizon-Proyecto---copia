@@ -1,18 +1,8 @@
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from extensions import db
-from models import Configuracion, Empresa, Usuario
-from models.roles import (
-    ESTADO_EMPRESA_ACTIVO,
-    ESTADO_EMPRESA_INACTIVO,
-    ESTADO_EMPRESA_PENDIENTE,
-    ESTADO_EMPRESA_RECHAZADO,
-    ESTADOS_EMPRESA,
-    MATRIZ_PERMISOS,
-    ROL_EMPLEADO,
-    ROL_EMPRESA,
-)
+from models import Empresa, Evaluacion, ResultadoEvaluacion, Rol, Sector, TamanoEmpresa, Usuario
 from routes.decoradores import superadmin_requerido
 from services.auditoria import registrar_y_commit
 
@@ -28,22 +18,18 @@ def _empresa_o_404(empresa_id):
 @superadmin_requerido
 def panel():
     total_empresas = Empresa.query.count()
-    empresas_pendientes = Empresa.query.filter_by(estado=ESTADO_EMPRESA_PENDIENTE).count()
-    empresas_activas = Empresa.query.filter_by(estado=ESTADO_EMPRESA_ACTIVO).count()
+    empresas_activas = Empresa.query.filter_by(estado="ACTIVA").count()
+    empresas_inactivas = Empresa.query.filter_by(estado="INACTIVA").count()
     total_usuarios = Usuario.query.count()
-    total_admins_empresa = Usuario.query.filter_by(rol=ROL_EMPRESA).count()
-    total_empleados = Usuario.query.filter_by(rol=ROL_EMPLEADO).count()
-    empresas_recientes = Empresa.query.order_by(Empresa.created_at.desc()).limit(5).all()
+    total_evaluaciones = Evaluacion.query.filter_by(estado="FINALIZADA").count()
 
     return render_template(
         "superadmin/panel.html",
         total_empresas=total_empresas,
-        empresas_pendientes=empresas_pendientes,
         empresas_activas=empresas_activas,
+        empresas_inactivas=empresas_inactivas,
         total_usuarios=total_usuarios,
-        total_admins_empresa=total_admins_empresa,
-        total_empleados=total_empleados,
-        empresas_recientes=empresas_recientes,
+        total_evaluaciones=total_evaluaciones,
     )
 
 
@@ -55,13 +41,13 @@ def empresas():
     busqueda = request.args.get("q", "").strip()
 
     consulta = Empresa.query
-    if estado in ESTADOS_EMPRESA:
+    if estado in ("ACTIVA", "INACTIVA"):
         consulta = consulta.filter(Empresa.estado == estado)
     if busqueda:
         consulta = consulta.filter(
             db.or_(
                 Empresa.nombre.ilike(f"%{busqueda}%"),
-                Empresa.ruc.ilike(f"%{busqueda}%"),
+                Empresa.nit.ilike(f"%{busqueda}%"),
             )
         )
 
@@ -71,59 +57,7 @@ def empresas():
         empresas=empresas,
         estado=estado,
         busqueda=busqueda,
-        estados=ESTADOS_EMPRESA,
     )
-
-
-@superadmin_bp.route("/empresas/pendientes")
-@login_required
-@superadmin_requerido
-def empresas_pendientes():
-    empresas = Empresa.query.filter_by(estado=ESTADO_EMPRESA_PENDIENTE).order_by(Empresa.created_at.asc()).all()
-    return render_template("superadmin/empresas_pendientes.html", empresas=empresas)
-
-
-@superadmin_bp.route("/empresas/<int:empresa_id>/aprobar", methods=["POST"])
-@login_required
-@superadmin_requerido
-def aprobar_empresa(empresa_id):
-    empresa = _empresa_o_404(empresa_id)
-    empresa.estado = ESTADO_EMPRESA_ACTIVO
-    empresa.notas_admin = request.form.get("notas_admin", empresa.notas_admin) or None
-    db.session.commit()
-    registrar_y_commit("EMPRESA_APROBADA", entidad="Empresa", entidad_id=empresa.id,
-                       detalle=f"Empresa {empresa.nombre} aprobada por {current_user.email}")
-    flash(f"La empresa '{empresa.nombre}' fue aprobada y ya tiene acceso.", "success")
-    return redirect(url_for("superadmin.empresas_pendientes"))
-
-
-@superadmin_bp.route("/empresas/<int:empresa_id>/rechazar", methods=["POST"])
-@login_required
-@superadmin_requerido
-def rechazar_empresa(empresa_id):
-    empresa = _empresa_o_404(empresa_id)
-    empresa.estado = ESTADO_EMPRESA_RECHAZADO
-    empresa.notas_admin = request.form.get("motivo", "").strip() or None
-    db.session.commit()
-    registrar_y_commit("EMPRESA_RECHAZADA", entidad="Empresa", entidad_id=empresa.id,
-                       detalle=f"Empresa {empresa.nombre} rechazada por {current_user.email}")
-    flash(f"La empresa '{empresa.nombre}' fue rechazada.", "warning")
-    return redirect(url_for("superadmin.empresas_pendientes"))
-
-
-@superadmin_bp.route("/empresas/<int:empresa_id>/suspender", methods=["POST"])
-@login_required
-@superadmin_requerido
-def suspender_empresa(empresa_id):
-    empresa = _empresa_o_404(empresa_id)
-    if empresa.estado == ESTADO_EMPRESA_PENDIENTE:
-        abort(400)
-    empresa.estado = ESTADO_EMPRESA_INACTIVO
-    db.session.commit()
-    registrar_y_commit("EMPRESA_SUSPENDIDA", entidad="Empresa", entidad_id=empresa.id,
-                       detalle=f"Empresa {empresa.nombre} suspendida por {current_user.email}")
-    flash(f"La empresa '{empresa.nombre}' fue suspendida.", "info")
-    return redirect(url_for("superadmin.empresas"))
 
 
 @superadmin_bp.route("/empresas/<int:empresa_id>/activar", methods=["POST"])
@@ -131,11 +65,32 @@ def suspender_empresa(empresa_id):
 @superadmin_requerido
 def activar_empresa(empresa_id):
     empresa = _empresa_o_404(empresa_id)
-    empresa.estado = ESTADO_EMPRESA_ACTIVO
+    empresa.estado = "ACTIVA"
     db.session.commit()
-    registrar_y_commit("EMPRESA_ACTIVADA", entidad="Empresa", entidad_id=empresa.id,
-                       detalle=f"Empresa {empresa.nombre} reactivada por {current_user.email}")
-    flash(f"La empresa '{empresa.nombre}' fue activada nuevamente.", "success")
+    registrar_y_commit(
+        "EMPRESA_ACTIVADA",
+        tabla_afectada="empresas",
+        id_registro=empresa.id_empresa,
+        descripcion=f"Empresa {empresa.nombre} activada por {current_user.correo}",
+    )
+    flash(f"La empresa '{empresa.nombre}' fue activada.", "success")
+    return redirect(url_for("superadmin.empresas"))
+
+
+@superadmin_bp.route("/empresas/<int:empresa_id>/inactivar", methods=["POST"])
+@login_required
+@superadmin_requerido
+def inactivar_empresa(empresa_id):
+    empresa = _empresa_o_404(empresa_id)
+    empresa.estado = "INACTIVA"
+    db.session.commit()
+    registrar_y_commit(
+        "EMPRESA_INACTIVADA",
+        tabla_afectada="empresas",
+        id_registro=empresa.id_empresa,
+        descripcion=f"Empresa {empresa.nombre} inactivada por {current_user.correo}",
+    )
+    flash(f"La empresa '{empresa.nombre}' fue inactivada.", "info")
     return redirect(url_for("superadmin.empresas"))
 
 
@@ -146,53 +101,195 @@ def detalle_empresa(empresa_id):
     empresa = _empresa_o_404(empresa_id)
 
     usuarios = (
-        Usuario.query.filter(Usuario.empresa_id == empresa.id, Usuario.rol.in_([ROL_EMPRESA, ROL_EMPLEADO]))
+        Usuario.query.filter_by(id_empresa=empresa.id_empresa)
         .order_by(Usuario.nombre.asc())
         .all()
     )
 
-    from models import IndiceMadurez
-
-    ultimo_indice = (
-        IndiceMadurez.query
-        .filter_by(empresa_id=empresa.id)
-        .order_by(IndiceMadurez.fecha.desc())
+    ultimo_eval = (
+        Evaluacion.query
+        .filter_by(id_empresa=empresa.id_empresa, estado="FINALIZADA")
+        .order_by(Evaluacion.fecha_finalizacion.desc())
         .first()
     )
+    ultimoResultado = None
+    if ultimo_eval:
+        ultimoResultado = ResultadoEvaluacion.query.filter_by(id_evaluacion=ultimo_eval.id_evaluacion).first()
 
     return render_template(
         "superadmin/detalle_empresa.html",
         empresa=empresa,
         usuarios=usuarios,
-        ultimo_indice=ultimo_indice,
+        ultimoResultado=ultimoResultado,
+        ultimo_eval=ultimo_eval,
     )
 
 
-@superadmin_bp.route("/permisos", methods=["GET", "POST"])
+@superadmin_bp.route("/sectores")
 @login_required
 @superadmin_requerido
-def permisos():
-    if request.method == "POST":
-        claves = [
-            "registro_empresas_abierto",
-            "requiere_aprobacion_empresa",
-            "permitir_registro_personas",
-        ]
-        for clave in claves:
-            valor = "on" if request.form.get(clave) else "off"
-            Configuracion.poner(clave, valor)
-        db.session.commit()
-        flash("La configuración de permisos globales fue actualizada.", "success")
-        return redirect(url_for("superadmin.permisos"))
+def sectores():
+    sectores = Sector.query.order_by(Sector.nombre.asc()).all()
+    return render_template("superadmin/sectores.html", sectores=sectores)
 
-    toggles = {
-        "registro_empresas_abierto": Configuracion.boolean("registro_empresas_abierto", True),
-        "requiere_aprobacion_empresa": Configuracion.boolean("requiere_aprobacion_empresa", True),
-        "permitir_registro_personas": Configuracion.boolean("permitir_registro_personas", True),
-    }
-    return render_template(
-        "superadmin/permisos.html",
-        toggles=toggles,
-        matriz=MATRIZ_PERMISOS,
-        roles=["superadmin", "empresa", "empleado"],
-    )
+
+@superadmin_bp.route("/sectores/nuevo", methods=["GET", "POST"])
+@login_required
+@superadmin_requerido
+def sector_nuevo():
+    if request.method == "POST":
+        nombre = request.form.get("nombre", "").strip()
+        descripcion = request.form.get("descripcion", "").strip() or None
+
+        if not nombre:
+            flash("El nombre del sector es obligatorio.", "error")
+            return render_template("superadmin/sector_form.html", sector=None)
+
+        if Sector.query.filter_by(nombre=nombre).first():
+            flash("Ya existe un sector con ese nombre.", "error")
+            return render_template("superadmin/sector_form.html", sector=None)
+
+        sector = Sector(nombre=nombre, descripcion=descripcion)
+        db.session.add(sector)
+        db.session.commit()
+        flash(f"Sector '{sector.nombre}' creado correctamente.", "success")
+        return redirect(url_for("superadmin.sectores"))
+
+    return render_template("superadmin/sector_form.html", sector=None)
+
+
+@superadmin_bp.route("/sectores/<int:sector_id>/editar", methods=["GET", "POST"])
+@login_required
+@superadmin_requerido
+def sector_editar(sector_id):
+    sector = Sector.query.get_or_404(sector_id)
+
+    if request.method == "POST":
+        nombre = request.form.get("nombre", "").strip()
+        if not nombre:
+            flash("El nombre del sector es obligatorio.", "error")
+            return render_template("superadmin/sector_form.html", sector=sector)
+
+        duplicado = Sector.query.filter(Sector.nombre == nombre, Sector.id_sector != sector.id_sector).first()
+        if duplicado:
+            flash("Ya existe otro sector con ese nombre.", "error")
+            return render_template("superadmin/sector_form.html", sector=sector)
+
+        sector.nombre = nombre
+        sector.descripcion = request.form.get("descripcion", "").strip() or None
+        db.session.commit()
+        flash(f"Sector '{sector.nombre}' actualizado correctamente.", "success")
+        return redirect(url_for("superadmin.sectores"))
+
+    return render_template("superadmin/sector_form.html", sector=sector)
+
+
+@superadmin_bp.route("/sectores/<int:sector_id>/eliminar", methods=["POST"])
+@login_required
+@superadmin_requerido
+def sector_eliminar(sector_id):
+    sector = Sector.query.get_or_404(sector_id)
+    if sector.empresas.count() > 0:
+        flash("No se puede eliminar el sector porque tiene empresas asociadas.", "error")
+        return redirect(url_for("superadmin.sectores"))
+    nombre = sector.nombre
+    db.session.delete(sector)
+    db.session.commit()
+    flash(f"Sector '{nombre}' eliminado.", "info")
+    return redirect(url_for("superadmin.sectores"))
+
+
+@superadmin_bp.route("/tamanos")
+@login_required
+@superadmin_requerido
+def tamanos():
+    tamanos = TamanoEmpresa.query.order_by(TamanoEmpresa.numero_empleados_min.asc()).all()
+    return render_template("superadmin/tamanos.html", tamanos=tamanos)
+
+
+@superadmin_bp.route("/tamanos/nuevo", methods=["GET", "POST"])
+@login_required
+@superadmin_requerido
+def tamano_nuevo():
+    if request.method == "POST":
+        nombre = request.form.get("nombre", "").strip()
+        descripcion = request.form.get("descripcion", "").strip() or None
+        min_emp = request.form.get("numero_empleados_min", type=int)
+        max_emp = request.form.get("numero_empleados_max", type=int)
+
+        if not nombre:
+            flash("El nombre es obligatorio.", "error")
+            return render_template("superadmin/tamano_form.html", tamano=None)
+
+        if TamanoEmpresa.query.filter_by(nombre=nombre).first():
+            flash("Ya existe un tamano con ese nombre.", "error")
+            return render_template("superadmin/tamano_form.html", tamano=None)
+
+        tamano = TamanoEmpresa(nombre=nombre, descripcion=descripcion, numero_empleados_min=min_emp, numero_empleados_max=max_emp)
+        db.session.add(tamano)
+        db.session.commit()
+        flash(f"Tamano '{tamano.nombre}' creado correctamente.", "success")
+        return redirect(url_for("superadmin.tamanos"))
+
+    return render_template("superadmin/tamano_form.html", tamano=None)
+
+
+@superadmin_bp.route("/tamanos/<int:tamano_id>/editar", methods=["GET", "POST"])
+@login_required
+@superadmin_requerido
+def tamano_editar(tamano_id):
+    tamano = TamanoEmpresa.query.get_or_404(tamano_id)
+
+    if request.method == "POST":
+        nombre = request.form.get("nombre", "").strip()
+        if not nombre:
+            flash("El nombre es obligatorio.", "error")
+            return render_template("superadmin/tamano_form.html", tamano=tamano)
+
+        duplicado = TamanoEmpresa.query.filter(TamanoEmpresa.nombre == nombre, TamanoEmpresa.id_tamano != tamano.id_tamano).first()
+        if duplicado:
+            flash("Ya existe otro tamano con ese nombre.", "error")
+            return render_template("superadmin/tamano_form.html", tamano=tamano)
+
+        tamano.nombre = nombre
+        tamano.descripcion = request.form.get("descripcion", "").strip() or None
+        tamano.numero_empleados_min = request.form.get("numero_empleados_min", type=int)
+        tamano.numero_empleados_max = request.form.get("numero_empleados_max", type=int)
+        db.session.commit()
+        flash(f"Tamano '{tamano.nombre}' actualizado correctamente.", "success")
+        return redirect(url_for("superadmin.tamanos"))
+
+    return render_template("superadmin/tamano_form.html", tamano=tamano)
+
+
+@superadmin_bp.route("/tamanos/<int:tamano_id>/eliminar", methods=["POST"])
+@login_required
+@superadmin_requerido
+def tamano_eliminar(tamano_id):
+    tamano = TamanoEmpresa.query.get_or_404(tamano_id)
+    if tamano.empresas.count() > 0:
+        flash("No se puede eliminar porque tiene empresas asociadas.", "error")
+        return redirect(url_for("superadmin.tamanos"))
+    nombre = tamano.nombre
+    db.session.delete(tamano)
+    db.session.commit()
+    flash(f"Tamano '{nombre}' eliminado.", "info")
+    return redirect(url_for("superadmin.tamanos"))
+
+
+@superadmin_bp.route("/ranking")
+@login_required
+@superadmin_requerido
+def ranking():
+    from routes.analisis import _ranking_empresas
+
+    ranking = _ranking_empresas()
+    empresas_ranking = []
+    for emp_id, nombre, indice, nivel in ranking:
+        empresas_ranking.append({
+            "id": emp_id,
+            "nombre": nombre,
+            "indice": round(float(indice), 2),
+            "nivel": nivel,
+        })
+    return render_template("superadmin/ranking.html", empresas_ranking=empresas_ranking)

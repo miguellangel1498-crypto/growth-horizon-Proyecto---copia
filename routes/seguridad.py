@@ -17,25 +17,25 @@ def auditoria():
     email = request.args.get("usuario", "").strip()
     busqueda = request.args.get("q", "").strip()
 
-    consulta = Auditoria.query.outerjoin(Usuario, Auditoria.usuario_id == Usuario.id)
+    consulta = Auditoria.query.outerjoin(Usuario, Auditoria.id_usuario == Usuario.id_usuario)
 
     if accion:
         consulta = consulta.filter(Auditoria.accion == accion)
     if email:
-        consulta = consulta.filter(Usuario.email.ilike(f"%{email}%"))
+        consulta = consulta.filter(Usuario.correo.ilike(f"%{email}%"))
     if busqueda:
         patron = f"%{busqueda}%"
         consulta = consulta.filter(
             db.or_(
                 Auditoria.accion.ilike(patron),
-                Auditoria.entidad.ilike(patron),
-                Auditoria.detalle.ilike(patron),
-                Auditoria.ip_address.ilike(patron),
-                Usuario.email.ilike(patron),
+                Auditoria.tabla_afectada.ilike(patron),
+                Auditoria.descripcion.ilike(patron),
+                Auditoria.direccion_ip.ilike(patron),
+                Usuario.correo.ilike(patron),
             )
         )
 
-    registros = consulta.order_by(Auditoria.created_at.desc()).paginate(
+    registros = consulta.order_by(Auditoria.fecha.desc()).paginate(
         page=pagina, per_page=20, error_out=False
     )
     acciones = [r[0] for r in (Auditoria.query.with_entities(Auditoria.accion).distinct().all())]

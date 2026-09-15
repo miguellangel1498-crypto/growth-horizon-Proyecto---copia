@@ -1,106 +1,95 @@
 {% extends "base.html" %}
 
-{% block title %}Detalle de empresa &middot; Growth Horizon{% endblock %}
+{% block title %}Detalle de empresa - Growth Horizon{% endblock %}
 {% block cabecera %}{{ empresa.nombre }}{% endblock %}
-{% block subcabecera %}Informacion y estado de la empresa en la plataforma.{% endblock %}
+{% block subcabecera %}Informacion y estado de la empresa.{% endblock %}
 
 {% block contenido %}
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm flex-1">
-                <div>
-                    <dt class="text-slate-500">RUC</dt>
-                    <dd class="font-medium text-slate-800">{{ empresa.ruc or '---' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-slate-500">Sector</dt>
-                    <dd class="font-medium text-slate-800">{{ empresa.sector.nombre if empresa.sector else '---' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-slate-500">Actividad</dt>
-                    <dd class="font-medium text-slate-800">{{ empresa.actividad or '---' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-slate-500">Tamano</dt>
-                    <dd class="font-medium text-slate-800">{{ empresa.etiqueta_tamano }}</dd>
-                </div>
-                <div>
-                    <dt class="text-slate-500">Telefono</dt>
-                    <dd class="font-medium text-slate-800">{{ empresa.telefono or '---' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-slate-500">Correo</dt>
-                    <dd class="font-medium text-slate-800">{{ empresa.correo or '---' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-slate-500">Estado</dt>
-                    <dd>
-                        <span class="px-2 py-0.5 text-xs rounded-full
-                            {% if empresa.esta_activa %}bg-emerald-100 text-emerald-700
-                            {% elif empresa.esta_pendiente %}bg-amber-100 text-amber-700
-                            {% elif empresa.esta_rechazada %}bg-rose-100 text-rose-700
-                            {% else %}bg-slate-100 text-slate-600{% endif %}">
-                            {{ empresa.etiqueta_estado }}
-                        </span>
-                    </dd>
-                </div>
-                <div class="sm:col-span-2">
-                    <dt class="text-slate-500">Notas del superadministrador</dt>
-                    <dd class="font-medium text-slate-800">{{ empresa.notas_admin or '---' }}</dd>
-                </div>
-            </dl>
-
-            <div class="flex flex-col gap-2 shrink-0">
-                {% if empresa.esta_pendiente %}
-                <form method="post" action="{{ url_for('superadmin.aprobar_empresa', empresa_id=empresa.id) }}">
-                    <button class="w-full px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition">Aprobar</button>
-                </form>
-                <form method="post" action="{{ url_for('superadmin.rechazar_empresa', empresa_id=empresa.id) }}">
-                    <button class="w-full px-4 py-2.5 rounded-lg bg-rose-600 text-white text-sm font-semibold hover:bg-rose-700 transition">Rechazar</button>
-                </form>
-                {% elif empresa.esta_activa %}
-                <form method="post" action="{{ url_for('superadmin.suspender_empresa', empresa_id=empresa.id) }}"
-                      onsubmit="return confirm('Suspender el acceso de esta empresa?')">
-                    <button class="w-full px-4 py-2.5 rounded-lg border border-amber-300 text-amber-700 text-sm font-semibold hover:bg-amber-50 transition">Suspender</button>
-                </form>
-                {% elif empresa.esta_inactiva %}
-                <form method="post" action="{{ url_for('superadmin.activar_empresa', empresa_id=empresa.id) }}">
-                    <button class="w-full px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition">Reactivar</button>
-                </form>
-                {% endif %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h3 class="text-lg font-bold text-slate-800 mb-4">Datos de la empresa</h3>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div><span class="text-slate-500">NIT:</span> <span class="font-medium text-slate-700">{{ empresa.nit or '---' }}</span></div>
+            <div><span class="text-slate-500">Sector:</span> <span class="font-medium text-slate-700">{{ empresa.sector.nombre if empresa.sector else '---' }}</span></div>
+            <div><span class="text-slate-500">Tamano:</span> <span class="font-medium text-slate-700">{{ empresa.tamano.nombre if empresa.tamano else '---' }}</span></div>
+            <div><span class="text-slate-500">Empleados:</span> <span class="font-medium text-slate-700">{{ empresa.numero_empleados or '---' }}</span></div>
+            <div><span class="text-slate-500">Ciudad:</span> <span class="font-medium text-slate-700">{{ empresa.ciudad or '---' }}</span></div>
+            <div><span class="text-slate-500">Departamento:</span> <span class="font-medium text-slate-700">{{ empresa.departamento or '---' }}</span></div>
+            <div><span class="text-slate-500">Telefono:</span> <span class="font-medium text-slate-700">{{ empresa.telefono or '---' }}</span></div>
+            <div><span class="text-slate-500">Correo:</span> <span class="font-medium text-slate-700">{{ empresa.correo or '---' }}</span></div>
+            <div>
+                <span class="text-slate-500">Estado:</span>
+                <span class="px-2 py-1 text-xs font-bold rounded
+                    {% if empresa.esta_activa %}bg-emerald-100 text-emerald-700
+                    {% else %}bg-red-100 text-red-700{% endif %}">
+                    {{ empresa.etiqueta_estado }}
+                </span>
             </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
-            <p class="text-3xl font-black text-slate-900">{{ total_empleados }}</p>
-            <p class="text-sm text-slate-500 mt-1">Empleados</p>
-        </div>
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
-            <p class="text-3xl font-black {% if ultimo_indice %}{% if ultimo_indice.puntaje >= 70 %}text-emerald-600{% elif ultimo_indice.puntaje >= 40 %}text-amber-600{% else %}text-red-600{% endif %}{% endif %}">
-                {{ ultimo_indice.puntaje if ultimo_indice else '---' }}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h3 class="text-lg font-bold text-slate-800 mb-4">Ultimo diagnostico</h3>
+        {% if ultimoResultado %}
+        <div class="text-center">
+            <p class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-emerald-500">
+                {{ ultimoResultado.indice_madurez }}
             </p>
             <p class="text-sm text-slate-500 mt-1">Indice de madurez</p>
+            <p class="text-lg font-bold mt-2
+                {% if ultimoResultado.nivel == 'OPTIMIZADO' %}text-emerald-600
+                {% elif ultimoResultado.nivel == 'AVANZADO' %}text-cyan-600
+                {% elif ultimoResultado.nivel == 'INTERMEDIO' %}text-blue-600
+                {% elif ultimoResultado.nivel == 'BASICO' %}text-amber-600
+                {% else %}text-red-600{% endif %}">
+                {{ ultimoResultado.nivel }}
+            </p>
+            {% if ultimo_eval %}
+            <p class="text-xs text-slate-400 mt-2">{{ ultimo_eval.fecha_finalizacion.strftime('%d/%m/%Y') if ultimo_eval.fecha_finalizacion else 'N/A' }}</p>
+            {% endif %}
         </div>
+        {% else %}
+        <p class="text-slate-500 text-center">Sin evaluaciones finalizadas</p>
+        {% endif %}
     </div>
+</div>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <h3 class="font-bold text-slate-900 mb-4">Usuarios de la empresa</h3>
-        <ul class="divide-y divide-slate-100">
-            {% for u in usuarios %}
-            <li class="py-3 flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-slate-800">{{ u.nombre }} {% if u.cargo %}<span class="text-slate-400">({{ u.cargo }})</span>{% endif %}</p>
-                    <p class="text-xs text-slate-400">{{ u.email }} | {{ u.etiqueta_rol }}</p>
-                </div>
-                <span class="text-xs px-2 py-0.5 rounded-full {{ 'bg-emerald-100 text-emerald-700' if u.activo else 'bg-slate-100 text-slate-500' }}">
-                    {{ 'Activo' if u.activo else 'Inactivo' }}
-                </span>
-            </li>
-            {% else %}
-            <li class="py-3 text-sm text-slate-400">Sin usuarios asociados.</li>
-            {% endfor %}
-        </ul>
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+    <h3 class="text-lg font-bold text-slate-800 mb-4">Usuarios ({{ usuarios | length }})</h3>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-slate-200 bg-slate-50">
+                    <th class="text-left px-4 py-2 font-semibold text-slate-600">Nombre</th>
+                    <th class="text-left px-4 py-2 font-semibold text-slate-600">Correo</th>
+                    <th class="text-left px-4 py-2 font-semibold text-slate-600">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in usuarios %}
+                <tr class="border-b border-slate-100">
+                    <td class="px-4 py-3 text-slate-700">{{ u.nombre }} {{ u.apellido }}</td>
+                    <td class="px-4 py-3 text-slate-600">{{ u.correo }}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-2 py-1 text-xs font-bold rounded
+                            {% if u.estado == 'ACTIVO' %}bg-emerald-100 text-emerald-700
+                            {% else %}bg-red-100 text-red-700{% endif %}">
+                            {{ u.estado }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+</div>
+
+<div class="flex items-center gap-3">
+    <a href="{{ url_for('empresas.listar') }}" class="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 transition">
+        Volver a empresas
+    </a>
+    <a href="{{ url_for('empresas.editar', empresa_id=empresa.id_empresa) }}" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white rounded-lg text-sm font-medium hover:from-cyan-600 hover:to-emerald-600 transition">
+        Editar empresa
+    </a>
+</div>
 {% endblock %}

@@ -1,16 +1,14 @@
 from extensions import db
-from models.base import TimestampMixin
 
 
-class Sector(TimestampMixin, db.Model):
+class Sector(db.Model):
     __tablename__ = "sectores"
 
-    id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    descripcion = db.Column(db.Text, nullable=True)
-    color = db.Column(db.String(20), nullable=False, default="#0891b2")
+    id_sector = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nombre = db.Column(db.String(100), nullable=False, unique=True)
+    descripcion = db.Column(db.String(255), nullable=True)
 
-    empresas = db.relationship("Empresa", backref="sector", lazy="dynamic", passive_deletes=True)
+    empresas = db.relationship("Empresa", backref="sector", lazy="dynamic")
 
     def __repr__(self):
         return f"<Sector {self.nombre}>"

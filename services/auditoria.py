@@ -24,74 +24,66 @@ def _usuario_actual_id():
 
     try:
         if current_user.is_authenticated:
-            return current_user.get_id()
+            return current_user.id_usuario
     except Exception:
         pass
     return None
 
 
-def registrar(accion, entidad=None, entidad_id=None, detalle=None):
+def registrar(accion, tabla_afectada=None, id_registro=None, descripcion=None):
     ctx = _contexto_request()
     registro = Auditoria(
-        usuario_id=_usuario_actual_id(),
+        id_usuario=_usuario_actual_id(),
         accion=accion,
-        entidad=entidad,
-        entidad_id=entidad_id,
-        detalle=detalle,
-        ip_address=ctx["ip"],
-        user_agent=ctx["ua"],
+        tabla_afectada=tabla_afectada,
+        id_registro=id_registro,
+        descripcion=descripcion,
+        direccion_ip=ctx["ip"],
     )
     db.session.add(registro)
     return registro
 
 
-def registrar_y_commit(accion, entidad=None, entidad_id=None, detalle=None):
-    registro = registrar(accion, entidad, entidad_id, detalle)
+def registrar_y_commit(accion, tabla_afectada=None, id_registro=None, descripcion=None):
+    registro = registrar(accion, tabla_afectada, id_registro, descripcion)
     db.session.commit()
     return registro
 
 
 def registrar_login(usuario, exitoso=True, motivo=None):
-    detalle = f"Acceso de {usuario.email} ({usuario.rol})"
+    detalle = f"Acceso de {usuario.correo}"
     if motivo:
         detalle = f"{detalle} - {motivo}"
     accion = "LOGIN_EXITOSO" if exitoso else "LOGIN_FALLIDO"
     return registrar(
         accion=accion,
-        entidad="Usuario",
-        entidad_id=usuario.id if usuario else None,
-        detalle=detalle,
+        tabla_afectada="usuarios",
+        id_registro=usuario.id_usuario,
+        descripcion=detalle,
     )
 
 
 def registrar_login_fallido(usuario, motivo=None):
-    intentos = usuario.intentos_fallidos
-    if intentos <= 3:
-        return None
-    detalle = f"Acceso de {usuario.email} ({usuario.rol}) - {intentos} intentos fallidos"
+    detalle = f"Acceso fallido de {usuario.correo}"
     if motivo:
         detalle = f"{detalle} - {motivo}"
     return registrar(
         accion="LOGIN_FALLIDO",
-        entidad="Usuario",
-        entidad_id=usuario.id,
-        detalle=detalle,
+        tabla_afectada="usuarios",
+        id_registro=usuario.id_usuario,
+        descripcion=detalle,
     )
 
 
 def registrar_alerta_superadmin(usuario, motivo=None):
-    detalle = f"ALERTA CRITICA: Intento de acceso fallido a cuenta superadmin ({usuario.email})"
+    detalle = f"ALERTA: Intento de acceso fallido a cuenta superadmin ({usuario.correo})"
     if motivo:
         detalle = f"{detalle} - {motivo}"
-    ctx = _contexto_request()
-    return Auditoria(
-        usuario_id=usuario.id,
+    return registrar(
         accion="ALERTA_SUPERADMIN",
-        entidad="Usuario",
-        entidad_id=usuario.id,
-        detalle=detalle,
-        ip_address=ctx["ip"],
-        user_agent=ctx["ua"],
+        tabla_afectada="usuarios",
+        id_registro=usuario.id_usuario,
+        descripcion=detalle,
     )
 
 
@@ -109,15 +101,12 @@ class AutoAuditoria:
             return
 
         pendientes = []
-
         for obj in sesion.new:
             if isinstance(obj, cls.MODELOS_VIGILADOS):
                 pendientes.append((obj, "INSERT", None))
-
         for obj in sesion.dirty:
             if isinstance(obj, cls.MODELOS_VIGILADOS) and sesion.is_modified(obj, include_collections=False):
                 pendientes.append((obj, "UPDATE", cls._cambios(obj)))
-
         for obj in sesion.deleted:
             if isinstance(obj, cls.MODELOS_VIGILADOS):
                 pendientes.append((obj, "DELETE", None))
@@ -131,19 +120,17 @@ class AutoAuditoria:
         if not pendientes:
             return
 
-        ctx = _contexto_request()
         usuario_id = _usuario_actual_id()
 
         for obj, accion, detalle in pendientes:
+            id_col = getattr(obj, "id_empresa", None) or getattr(obj, "id_sector", None) or 0
             sesion.add(
                 Auditoria(
-                    usuario_id=usuario_id,
+                    id_usuario=usuario_id,
                     accion=accion,
-                    entidad=obj.__class__.__name__,
-                    entidad_id=obj.id,
-                    detalle=detalle,
-                    ip_address=ctx["ip"],
-                    user_agent=ctx["ua"],
+                    tabla_afectada=obj.__tablename__,
+                    id_registro=id_col,
+                    descripcion=detalle,
                 )
             )
 
@@ -165,7 +152,7 @@ class AutoAuditoria:
         cambios = {}
         for col in obj.__table__.columns:
             nombre = col.key
-            if nombre in {"created_at", "updated_at"}:
+            if nombre in {"created_at", "updated_at", "fecha", "fecha_registro"}:
                 continue
             try:
                 historia = state.attrs[nombre].history
@@ -179,5 +166,4 @@ class AutoAuditoria:
                 if anterior != nuevo:
                     cambios[nombre] = {"anterior": anterior, "nuevo": nuevo}
         import json
-
         return json.dumps(cambios, ensure_ascii=False, default=str)

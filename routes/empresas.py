@@ -2,8 +2,7 @@ from flask import Blueprint, abort, flash, redirect, render_template, request, u
 from flask_login import current_user, login_required
 
 from extensions import db
-from models import Empresa, Sector, Usuario
-from models.roles import ROL_EMPRESA, ROL_EMPLEADO
+from models import Empresa, Evaluacion, ResultadoEvaluacion, Sector, TamanoEmpresa, Usuario
 from routes.decoradores import superadmin_requerido
 
 empresas_bp = Blueprint("empresas", __name__, url_prefix="/empresas")
@@ -19,13 +18,12 @@ def listar():
     consulta = Empresa.query
 
     if sector_id:
-        consulta = consulta.filter(Empresa.sector_id == sector_id)
+        consulta = consulta.filter(Empresa.id_sector == sector_id)
     if busqueda:
         consulta = consulta.filter(
             db.or_(
                 Empresa.nombre.ilike(f"%{busqueda}%"),
-                Empresa.ruc.ilike(f"%{busqueda}%"),
-                Empresa.actividad.ilike(f"%{busqueda}%"),
+                Empresa.nit.ilike(f"%{busqueda}%"),
             )
         )
 
@@ -47,24 +45,30 @@ def listar():
 @superadmin_requerido
 def detalle(empresa_id):
     empresa = Empresa.query.get_or_404(empresa_id)
-    usuarios = [u for u in empresa.usuarios if u.activo]
-    total_empleados = sum(1 for u in usuarios if u.rol == ROL_EMPLEADO)
+    usuarios = [u for u in empresa.usuarios.all() if u.estado == "ACTIVO"]
 
-    from models import IndiceMadurez
-
-    ultimo_indice = (
-        IndiceMadurez.query
-        .filter_by(empresa_id=empresa.id)
-        .order_by(IndiceMadurez.fecha.desc())
+    ultimo_eval = (
+        Evaluacion.query
+        .filter_by(id_empresa=empresa.id_empresa, estado="FINALIZADA")
+        .order_by(Evaluacion.fecha_finalizacion.desc())
         .first()
     )
+    ultimoResultado = None
+    if ultimo_eval:
+        ultimoResultado = ResultadoEvaluacion.query.filter_by(id_evaluacion=ultimo_eval.id_evaluacion).first()
+
+    from models import EmpresaRecomendacion
+    recomendaciones = []
+    if ultimo_eval:
+        recomendaciones = EmpresaRecomendacion.query.filter_by(id_evaluacion=ultimo_eval.id_evaluacion).all()
 
     return render_template(
         "empresas/detalle.html",
         empresa=empresa,
         usuarios=usuarios,
-        total_empleados=total_empleados,
-        ultimo_indice=ultimo_indice,
+        ultimoResultado=ultimoResultado,
+        ultimo_eval=ultimo_eval,
+        recomendaciones=recomendaciones,
     )
 
 
@@ -73,38 +77,40 @@ def detalle(empresa_id):
 @superadmin_requerido
 def nueva():
     sectores = Sector.query.order_by(Sector.nombre.asc()).all()
+    tamanos = TamanoEmpresa.query.order_by(TamanoEmpresa.numero_empleados_min.asc()).all()
 
     if request.method == "POST":
         nombre = request.form.get("nombre", "").strip()
-        ruc = request.form.get("ruc", "").strip() or None
-        sector_id = request.form.get("sector_id", type=int) or None
-        actividad = request.form.get("actividad", "").strip() or None
-        correo = request.form.get("correo", "").strip() or None
+        nit = request.form.get("nit", "").strip() or None
+        sector_id = request.form.get("sector_id", type=int)
+        tamano_id = request.form.get("tamano_id", type=int)
+        numero_empleados = request.form.get("numero_empleados", type=int)
+        ciudad = request.form.get("ciudad", "").strip() or None
+        departamento = request.form.get("departamento", "").strip() or None
         telefono = request.form.get("telefono", "").strip() or None
-        direccion = request.form.get("direccion", "").strip() or None
+        correo = request.form.get("correo", "").strip() or None
         sitio_web = request.form.get("sitio_web", "").strip() or None
-        estado = request.form.get("estado", "activo")
-        tamano_empresa = request.form.get("tamano_empresa", "PEQUENA")
 
         if not nombre:
             flash("El nombre de la empresa es obligatorio.", "error")
-            return render_template("empresas/form.html", sectores=sectores, empresa=None)
+            return render_template("empresas/form.html", sectores=sectores, tamanos=tamanos, empresa=None)
 
-        if ruc and Empresa.query.filter_by(ruc=ruc).first():
-            flash("Ya existe una empresa con ese RUC.", "error")
-            return render_template("empresas/form.html", sectores=sectores, empresa=None)
+        if nit and Empresa.query.filter_by(nit=nit).first():
+            flash("Ya existe una empresa con ese NIT.", "error")
+            return render_template("empresas/form.html", sectores=sectores, tamanos=tamanos, empresa=None)
 
         empresa = Empresa(
             nombre=nombre,
-            ruc=ruc,
-            sector_id=sector_id,
-            actividad=actividad,
-            correo=correo,
+            nit=nit,
+            id_sector=sector_id,
+            id_tamano=tamano_id,
+            numero_empleados=numero_empleados,
+            ciudad=ciudad,
+            departamento=departamento,
             telefono=telefono,
-            direccion=direccion,
+            correo=correo,
             sitio_web=sitio_web,
-            estado=estado,
-            tamano_empresa=tamano_empresa,
+            estado="ACTIVA",
         )
         db.session.add(empresa)
         db.session.commit()
@@ -112,7 +118,7 @@ def nueva():
         flash(f"Empresa '{empresa.nombre}' creada correctamente.", "success")
         return redirect(url_for("empresas.listar"))
 
-    return render_template("empresas/form.html", sectores=sectores, empresa=None)
+    return render_template("empresas/form.html", sectores=sectores, tamanos=tamanos, empresa=None)
 
 
 @empresas_bp.route("/<int:empresa_id>/editar", methods=["GET", "POST"])
@@ -121,38 +127,38 @@ def nueva():
 def editar(empresa_id):
     empresa = Empresa.query.get_or_404(empresa_id)
     sectores = Sector.query.order_by(Sector.nombre.asc()).all()
+    tamanos = TamanoEmpresa.query.order_by(TamanoEmpresa.numero_empleados_min.asc()).all()
 
     if request.method == "POST":
         nombre = request.form.get("nombre", "").strip()
-        ruc = request.form.get("ruc", "").strip() or None
-        sector_id = request.form.get("sector_id", type=int) or None
+        nit = request.form.get("nit", "").strip() or None
 
         if not nombre:
             flash("El nombre de la empresa es obligatorio.", "error")
-            return render_template("empresas/form.html", sectores=sectores, empresa=empresa)
+            return render_template("empresas/form.html", sectores=sectores, tamanos=tamanos, empresa=empresa)
 
-        if ruc:
-            duplicado = Empresa.query.filter(Empresa.ruc == ruc, Empresa.id != empresa.id).first()
+        if nit:
+            duplicado = Empresa.query.filter(Empresa.nit == nit, Empresa.id_empresa != empresa.id_empresa).first()
             if duplicado:
-                flash("Ya existe otra empresa con ese RUC.", "error")
-                return render_template("empresas/form.html", sectores=sectores, empresa=empresa)
+                flash("Ya existe otra empresa con ese NIT.", "error")
+                return render_template("empresas/form.html", sectores=sectores, tamanos=tamanos, empresa=empresa)
 
         empresa.nombre = nombre
-        empresa.ruc = ruc
-        empresa.sector_id = sector_id
-        empresa.actividad = request.form.get("actividad", "").strip() or None
-        empresa.correo = request.form.get("correo", "").strip() or None
+        empresa.nit = nit
+        empresa.id_sector = request.form.get("sector_id", type=int)
+        empresa.id_tamano = request.form.get("tamano_id", type=int)
+        empresa.numero_empleados = request.form.get("numero_empleados", type=int)
+        empresa.ciudad = request.form.get("ciudad", "").strip() or None
+        empresa.departamento = request.form.get("departamento", "").strip() or None
         empresa.telefono = request.form.get("telefono", "").strip() or None
-        empresa.direccion = request.form.get("direccion", "").strip() or None
+        empresa.correo = request.form.get("correo", "").strip() or None
         empresa.sitio_web = request.form.get("sitio_web", "").strip() or None
-        empresa.estado = request.form.get("estado", "activo")
-        empresa.tamano_empresa = request.form.get("tamano_empresa", empresa.tamano_empresa)
 
         db.session.commit()
         flash(f"Empresa '{empresa.nombre}' actualizada correctamente.", "success")
         return redirect(url_for("empresas.listar"))
 
-    return render_template("empresas/form.html", sectores=sectores, empresa=empresa)
+    return render_template("empresas/form.html", sectores=sectores, tamanos=tamanos, empresa=empresa)
 
 
 @empresas_bp.route("/<int:empresa_id>/eliminar", methods=["POST"])
