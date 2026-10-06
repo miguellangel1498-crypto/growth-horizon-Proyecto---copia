@@ -1,0 +1,24 @@
+/**
+ * Velaris - Growth Horizon
+ * Apilado del canvas y del contenido, mas el degradado de respaldo
+ * que se ve mientras carga el canvas o si WebGL no esta disponible.
+ */
+.gh-velaris {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0D1117 0%, #0e7490 55%, #10b981 100%);
+}
+
+.gh-velaris-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.gh-velaris-content {
+    position: relative;
+    z-index: 10;
+}
